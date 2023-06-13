@@ -256,6 +256,13 @@ a + b / c;
 a + b * c + d / e - f;
 3 + 4;
 -5 * 5;
+
+3 > 5 == false;
+3 < 5 == true;
+
+true == true;
+false == false;
+true != false;
             """.trimIndent()
 
             val expected = listOf(
@@ -374,13 +381,56 @@ a + b * c + d / e - f;
                         IntegerLiteral(Token.number("5", 9, 5)),
                     )
                 ),
+                ExpressionStatement(
+                    Token.fromString(";", 11, 14), InfixExpression(
+                        Token.fromString("==", 11, 6),
+                        InfixExpression(
+                            Token.fromString(">", 11, 2),
+                            IntegerLiteral(Token.number("3", 11, 0)),
+                            IntegerLiteral(Token.number("5", 11, 4)),
+                        ),
+                        BooleanLiteral(Token.fromString("false", 11, 9)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 12, 13), InfixExpression(
+                        Token.fromString("==", 12, 6),
+                        InfixExpression(
+                            Token.fromString("<", 12, 2),
+                            IntegerLiteral(Token.number("3", 12, 0)),
+                            IntegerLiteral(Token.number("5", 12, 4)),
+                        ),
+                        BooleanLiteral(Token.fromString("true", 12, 9)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 14, 12), InfixExpression (
+                        Token.fromString("==", 14, 5),
+                        BooleanLiteral(Token.fromString("true", 14, 0)),
+                        BooleanLiteral(Token.fromString("true", 14, 8)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 15, 14), InfixExpression(
+                        Token.fromString("==", 15, 6),
+                        BooleanLiteral(Token.fromString("false", 15, 0)),
+                        BooleanLiteral(Token.fromString("false", 15, 9)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 16, 13), InfixExpression(
+                        Token.fromString("!=", 16, 5),
+                        BooleanLiteral(Token.fromString("true", 16, 0)),
+                        BooleanLiteral(Token.fromString("false", 16, 8)),
+                    )
+                ),
             )
 
             val lexer = Lexer(input)
             val parser = Parser(lexer)
             val program = parser.parseProgram()
 
-            assertEquals(10, program.statements.size)
+            assertEquals(expected.size, program.statements.size)
             assertEquals(0, parser.errors.size)
 
             expected.forEachIndexed { index, statement ->
@@ -390,4 +440,33 @@ a + b * c + d / e - f;
             }
         }
     }
+
+    class TestBooleanLiteral {
+        @Test
+        fun `test boolean literal`() {
+            val input = """
+                    true;
+                    false;
+                    """.trimIndent()
+
+            val expected = listOf(
+                ExpressionStatement(Token.fromString(";", 0, 4), BooleanLiteral(Token.fromString("true", 0, 0))),
+                ExpressionStatement(Token.fromString(";", 1, 5), BooleanLiteral(Token.fromString("false", 1, 0))),
+            )
+
+            val lexer = Lexer(input)
+            val parser = Parser(lexer)
+            val program = parser.parseProgram()
+
+            assertEquals(2, program.statements.size)
+            assertEquals(0, parser.errors.size)
+
+            expected.forEachIndexed { index, statement ->
+
+
+                assertEquals(statement, program.statements[index], "program.statements[$index] is not $statement")
+            }
+        }
+    }
+
 }

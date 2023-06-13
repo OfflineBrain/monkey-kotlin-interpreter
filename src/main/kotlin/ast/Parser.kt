@@ -41,6 +41,8 @@ data class Parser(private val lexer: Lexer) {
 
         prefixParseFns[TokenType.Identifier] = ::parseIdentifier
         prefixParseFns[TokenType.Number] = ::parseIntegerLiteral
+        prefixParseFns[TokenType.True] = ::parseBooleanLiteral
+        prefixParseFns[TokenType.False] = ::parseBooleanLiteral
         prefixParseFns[TokenType.Exclamation] = ::parsePrefixExpression
         prefixParseFns[TokenType.Minus] = ::parsePrefixExpression
 
@@ -69,6 +71,10 @@ data class Parser(private val lexer: Lexer) {
 
     private fun parseIntegerLiteral(): IntegerLiteral {
         return IntegerLiteral(currToken)
+    }
+
+    private fun parseBooleanLiteral(): BooleanLiteral {
+        return BooleanLiteral(currToken)
     }
 
     fun parseProgram(): Program {
@@ -125,7 +131,6 @@ data class Parser(private val lexer: Lexer) {
 
     private fun parseExpressionStatement(): ExpressionStatement {
         val expression = parseExpression(Precedence.LOWEST)
-
         if (peekToken.type is TokenType.Semicolon) {
             nextToken()
         }
