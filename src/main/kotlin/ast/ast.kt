@@ -56,9 +56,11 @@ data class IntegerLiteral(val token: Token) : Expression {
 
 data class PrefixExpression(
     val token: Token,
-    val operator: String,
     val right: Expression
 ) : Expression {
+    val operator: String
+        get() = token.literal
+
     override fun tokenLiteral(): String {
         return token.literal
     }
@@ -67,9 +69,11 @@ data class PrefixExpression(
 data class InfixExpression(
     val token: Token,
     val left: Expression,
-    val operator: String,
     val right: Expression
 ) : Expression {
+    val operator: String
+        get() = token.literal
+
     override fun tokenLiteral(): String {
         return token.literal
     }

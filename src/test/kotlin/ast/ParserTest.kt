@@ -242,5 +242,152 @@ class ParserTest {
                 )
             }
         }
+
+        @Test
+        fun `test operator precedence`() {
+            val input = """
+-a * b;
+!-a;
+a + b + c;
+a + b - c;
+a * b * c;
+a * b / c;
+a + b / c;
+a + b * c + d / e - f;
+3 + 4;
+-5 * 5;
+            """.trimIndent()
+
+            val expected = listOf(
+                ExpressionStatement(
+                    Token.fromString(";", 0, 6), InfixExpression(
+                        Token.fromString("*", 0, 3),
+                        PrefixExpression(
+                            Token.fromString("-", 0, 0),
+                            Identifier(Token.fromString("a", 0, 1)),
+                        ),
+                        Identifier(Token.fromString("b", 0, 5)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 1, 3), PrefixExpression(
+                        Token.fromString("!", 1, 0),
+                        PrefixExpression(
+                            Token.fromString("-", 1, 1),
+                            Identifier(Token.fromString("a", 1, 2)),
+                        ),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 2, 9), InfixExpression(
+                        Token.fromString("+", 2, 6),
+                        InfixExpression(
+                            Token.fromString("+", 2, 2),
+                            Identifier(Token.fromString("a", 2, 0)),
+                            Identifier(Token.fromString("b", 2, 4)),
+                        ),
+                        Identifier(Token.fromString("c", 2, 8)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 3, 9), InfixExpression(
+                        Token.fromString("-", 3, 6),
+                        InfixExpression(
+                            Token.fromString("+", 3, 2),
+                            Identifier(Token.fromString("a", 3, 0)),
+                            Identifier(Token.fromString("b", 3, 4)),
+                        ),
+                        Identifier(Token.fromString("c", 3, 8)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 4, 9), InfixExpression(
+                        Token.fromString("*", 4, 6),
+                        InfixExpression(
+                            Token.fromString("*", 4, 2),
+                            Identifier(Token.fromString("a", 4, 0)),
+                            Identifier(Token.fromString("b", 4, 4)),
+                        ),
+                        Identifier(Token.fromString("c", 4, 8)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 5, 9), InfixExpression(
+                        Token.fromString("/", 5, 6),
+                        InfixExpression(
+                            Token.fromString("*", 5, 2),
+                            Identifier(Token.fromString("a", 5, 0)),
+                            Identifier(Token.fromString("b", 5, 4)),
+                        ),
+                        Identifier(Token.fromString("c", 5, 8)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 6, 9), InfixExpression(
+                        Token.fromString("+", 6, 2),
+                        Identifier(Token.fromString("a", 6, 0)),
+                        InfixExpression(
+                            Token.fromString("/", 6, 6),
+                            Identifier(Token.fromString("b", 6, 4)),
+                            Identifier(Token.fromString("c", 6, 8)),
+                        ),
+                    )
+                ),
+                //a + b * c + d / e - f;
+                ExpressionStatement(
+                    Token.fromString(";", 7, 21), InfixExpression(
+                        Token.fromString("-", 7, 18),
+                        InfixExpression(
+                            Token.fromString("+", 7, 10),
+                            InfixExpression(
+                                Token.fromString("+", 7, 2),
+                                Identifier(Token.fromString("a", 7, 0)),
+                                InfixExpression(
+                                    Token.fromString("*", 7, 6),
+                                    Identifier(Token.fromString("b", 7, 4)),
+                                    Identifier(Token.fromString("c", 7, 8)),
+                                ),
+                            ),
+                            InfixExpression(
+                                Token.fromString("/", 7, 14),
+                                Identifier(Token.fromString("d", 7, 12)),
+                                Identifier(Token.fromString("e", 7, 16)),
+                            )
+                        ),
+                        Identifier(Token.fromString("f", 7, 20)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 8, 5), InfixExpression(
+                        Token.fromString("+", 8, 2),
+                        IntegerLiteral(Token.number("3", 8, 0)),
+                        IntegerLiteral(Token.number("4", 8, 4)),
+                    )
+                ),
+                ExpressionStatement(
+                    Token.fromString(";", 9, 6), InfixExpression(
+                        Token.fromString("*", 9, 3),
+                        PrefixExpression(
+                            Token.fromString("-", 9, 0),
+                            IntegerLiteral(Token.number("5", 9, 1)),
+                        ),
+                        IntegerLiteral(Token.number("5", 9, 5)),
+                    )
+                ),
+            )
+
+            val lexer = Lexer(input)
+            val parser = Parser(lexer)
+            val program = parser.parseProgram()
+
+            assertEquals(10, program.statements.size)
+            assertEquals(0, parser.errors.size)
+
+            expected.forEachIndexed { index, statement ->
+
+
+                assertEquals(statement, program.statements[index], "program.statements[$index] is not $statement")
+            }
+        }
     }
 }

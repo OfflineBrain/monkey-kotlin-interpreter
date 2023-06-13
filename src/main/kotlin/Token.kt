@@ -41,6 +41,10 @@ sealed class TokenType {
     // Special
     object EOF : TokenType()
     object Illegal : TokenType()
+
+    override fun toString(): String {
+        return this::class.simpleName ?: ""
+    }
 }
 
 data class Token(val type: TokenType, val literal: String, val line: Int, val position: Int) {

@@ -170,14 +170,14 @@ data class Parser(private val lexer: Lexer) {
 
         nextToken()
 
-        return PrefixExpression(token, token.literal, parseExpression(Precedence.PREFIX))
+        return PrefixExpression(token, parseExpression(Precedence.PREFIX))
     }
 
     private fun parseInfixExpression(left: Expression): Expression {
         val token = currToken
         val precedence = currPrecedence()
         nextToken()
-        return InfixExpression(token, left, token.literal, parseExpression(precedence))
+        return InfixExpression(token, left, parseExpression(precedence))
     }
 
 
