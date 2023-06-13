@@ -1,60 +1,94 @@
-sealed class Token(val literal: String, val line: Int, val position: Int) {
-    class Identifier(val value: String, line: Int, position: Int) : Token(value, line, position)
-    class Integer(val value: Int, line: Int, position: Int) : Token(value.toString(), line, position)
-    class Long(val value: kotlin.Long, line: Int, position: Int) : Token(value.toString(), line, position)
-    class Float(val value: kotlin.Float, line: Int, position: Int) : Token(value.toString(), line, position)
-    class Double(val value: kotlin.Double, line: Int, position: Int) : Token(value.toString(), line, position)
+sealed class TokenType {
+    // Identifiers + literals
+    object Identifier : TokenType()
+    object Number : TokenType()
 
     // Symbols
-    class Assign(line: Int, position: Int) : Token("=", line, position)
-    class Plus(line: Int, position: Int) : Token("+", line, position)
-    class Minus(line: Int, position: Int) : Token("-", line, position)
-    class Multiply(line: Int, position: Int) : Token("*", line, position)
-    class Divide(line: Int, position: Int) : Token("/", line, position)
-    class LParen(line: Int, position: Int) : Token("(", line, position)
-    class RParen(line: Int, position: Int) : Token(")", line, position)
-    class LBrace(line: Int, position: Int) : Token("{", line, position)
-    class RBrace(line: Int, position: Int) : Token("}", line, position)
-    class Semicolon(line: Int, position: Int) : Token(";", line, position)
-    class Colon(line: Int, position: Int) : Token(":", line, position)
-    class Comma(line: Int, position: Int) : Token(",", line, position)
-    class Dot(line: Int, position: Int) : Token(".", line, position)
-    class Exclamation(line: Int, position: Int) : Token("!", line, position)
-    class Question(line: Int, position: Int) : Token("?", line, position)
-    class Quote(line: Int, position: Int) : Token("\"", line, position)
-    class Lt(line: Int, position: Int) : Token("<", line, position)
-    class Lte(line: Int, position: Int) : Token("<=", line, position)
-    class Gt(line: Int, position: Int) : Token(">", line, position)
-    class Gte(line: Int, position: Int) : Token(">=", line, position)
-    class Eq(line: Int, position: Int) : Token("==", line, position)
-    class NotEq(line: Int, position: Int) : Token("!=", line, position)
+    object Assign : TokenType()
+    object Plus : TokenType()
+    object Minus : TokenType()
+    object Multiply : TokenType()
+    object Divide : TokenType()
+    object LParen : TokenType()
+    object RParen : TokenType()
+    object LBrace : TokenType()
+    object RBrace : TokenType()
+    object Semicolon : TokenType()
+    object Colon : TokenType()
+    object Comma : TokenType()
+    object Dot : TokenType()
+    object Exclamation : TokenType()
+    object Question : TokenType()
+    object Quote : TokenType()
+    object Lt : TokenType()
+    object Lte : TokenType()
+    object Gt : TokenType()
+    object Gte : TokenType()
+    object Eq : TokenType()
+    object NotEq : TokenType()
 
     // Keywords
-    class If(line: Int, position: Int) : Token("if", line, position)
-    class Else(line: Int, position: Int) : Token("else", line, position)
-    class For(line: Int, position: Int) : Token("for", line, position)
-    class While(line: Int, position: Int) : Token("while", line, position)
-    class Return(line: Int, position: Int) : Token("return", line, position)
-    class Let(line: Int, position: Int) : Token("let", line, position)
-    class Function(line: Int, position: Int) : Token("fn", line, position)
-    class True(line: Int, position: Int) : Token("true", line, position)
-    class False(line: Int, position: Int) : Token("false", line, position)
-
+    object If : TokenType()
+    object Else : TokenType()
+    object For : TokenType()
+    object While : TokenType()
+    object Return : TokenType()
+    object Let : TokenType()
+    object Function : TokenType()
+    object True : TokenType()
+    object False : TokenType()
 
     // Special
-    class EOF(line: Int, position: Int) : Token(0.toChar().toString(), line, position)
-    class Illegal(line: Int, position: Int) : Token("ILLEGAL", line, position)
+    object EOF : TokenType()
+    object Illegal : TokenType()
+}
 
-    override fun toString(): String {
-        return "Token($literal, $line, $position)"
-    }
+data class Token(val type: TokenType, val literal: String, val line: Int, val position: Int) {
+    companion object {
+        fun fromString(str: String, line: Int, position: Int): Token {
+            return when (str) {
+                "=" -> Token(TokenType.Assign, str, line, position)
+                "+" -> Token(TokenType.Plus, str, line, position)
+                "-" -> Token(TokenType.Minus, str, line, position)
+                "*" -> Token(TokenType.Multiply, str, line, position)
+                "/" -> Token(TokenType.Divide, str, line, position)
+                "(" -> Token(TokenType.LParen, str, line, position)
+                ")" -> Token(TokenType.RParen, str, line, position)
+                "{" -> Token(TokenType.LBrace, str, line, position)
+                "}" -> Token(TokenType.RBrace, str, line, position)
+                ";" -> Token(TokenType.Semicolon, str, line, position)
+                ":" -> Token(TokenType.Colon, str, line, position)
+                "," -> Token(TokenType.Comma, str, line, position)
+                "." -> Token(TokenType.Dot, str, line, position)
+                "!" -> Token(TokenType.Exclamation, str, line, position)
+                "?" -> Token(TokenType.Question, str, line, position)
+                "\"" -> Token(TokenType.Quote, str, line, position)
+                "<" -> Token(TokenType.Lt, str, line, position)
+                "<=" -> Token(TokenType.Lte, str, line, position)
+                ">" -> Token(TokenType.Gt, str, line, position)
+                ">=" -> Token(TokenType.Gte, str, line, position)
+                "==" -> Token(TokenType.Eq, str, line, position)
+                "!=" -> Token(TokenType.NotEq, str, line, position)
+                "if" -> Token(TokenType.If, str, line, position)
+                "else" -> Token(TokenType.Else, str, line, position)
+                "for" -> Token(TokenType.For, str, line, position)
+                "while" -> Token(TokenType.While, str, line, position)
+                "return" -> Token(TokenType.Return, str, line, position)
+                "let" -> Token(TokenType.Let, str, line, position)
+                "fn" -> Token(TokenType.Function, str, line, position)
+                "true" -> Token(TokenType.True, str, line, position)
+                "false" -> Token(TokenType.False, str, line, position)
+                0.toChar().toString() -> Token(TokenType.EOF, str, line, position)
+                else -> Token(TokenType.Identifier, str, line, position)
+            }
+        }
 
-    override fun equals(other: Any?): Boolean {
-        if (other !is Token) return false
-        return this::class == other::class && this.literal == other.literal && this.line == other.line && this.position == other.position
-    }
+        fun number(str: String, line: Int, position: Int): Token {
+            return Token(TokenType.Number, str, line, position)
+        }
 
-    override fun hashCode(): Int {
-        return this::class.hashCode() + this.literal.hashCode()
+        fun illegal(line: Int, position: Int): Token {
+            return Token(TokenType.Illegal, "", line, position)
+        }
     }
 }

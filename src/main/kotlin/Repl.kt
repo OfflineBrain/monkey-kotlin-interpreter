@@ -9,7 +9,7 @@ class Repl(private val reader: BufferedReader, private val writer: PrintWriter) 
             val line = reader.readLine() ?: break
             val lexer = Lexer(line)
             var token = lexer.nextToken()
-            while (token !is Token.EOF) {
+            while (token.type !is TokenType.EOF) {
                 writer.println(token)
                 token = lexer.nextToken()
             }
