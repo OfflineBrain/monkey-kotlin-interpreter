@@ -637,5 +637,74 @@ class ParserTest : ExpectSpec({
                 }
             }
         }
+
+        context("parse if expression") {
+            val data = listOf(
+                "if (x < y) { x };" to ExpressionStatement(
+                    Token(TokenType.Semicolon, 0, 15),
+                    IfExpression(
+                        Token(TokenType.If, 0, 0),
+                        InfixExpression(
+                            Token(TokenType.Lt, 0, 6),
+                            Identifier(Token(TokenType.Identifier, 0, 4, "x")),
+                            Identifier(Token(TokenType.Identifier, 0, 8, "y")),
+                        ),
+                        BlockStatement(
+                            Token(TokenType.LBrace, 0, 11),
+                            listOf(
+                                ExpressionStatement(
+                                    Token(TokenType.Identifier, 0, 13, "x"),
+                                    Identifier(Token(TokenType.Identifier, 0, 13, "x")),
+                                )
+                            ),
+                        ),
+                    ),
+                ),
+                "if (x < y) { x } else { y };" to ExpressionStatement(
+                    Token(TokenType.Semicolon, 0, 26),
+                    IfExpression(
+                        Token(TokenType.If, 0, 0),
+                        InfixExpression(
+                            Token(TokenType.Lt, 0, 6),
+                            Identifier(Token(TokenType.Identifier, 0, 4, "x")),
+                            Identifier(Token(TokenType.Identifier, 0, 8, "y")),
+                        ),
+                        BlockStatement(
+                            Token(TokenType.LBrace, 0, 11),
+                            listOf(
+                                ExpressionStatement(
+                                    Token(TokenType.Identifier, 0, 13, "x"),
+                                    Identifier(Token(TokenType.Identifier, 0, 13, "x")),
+                                )
+                            ),
+                        ),
+                        BlockStatement(
+                            Token(TokenType.LBrace, 0, 20),
+                            listOf(
+                                ExpressionStatement(
+                                    Token(TokenType.Identifier, 0, 22, "y"),
+                                    Identifier(Token(TokenType.Identifier, 0, 22, "y")),
+                                )
+                            ),
+                        ),
+                    ),
+                ),
+            )
+
+            data.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("parse $input") {
+                    assertEquals(0, parser.errors.size, parser.errors())
+                    assertEquals(
+                        expected,
+                        program.statements[0],
+                        "expected ${expected.render()} but got ${program.statements[0].render()}"
+                    )
+                }
+            }
+        }
     }
 })

@@ -46,6 +46,7 @@ data class Parser(private val lexer: Lexer) {
         prefixParseFns[TokenType.Exclamation] = ::parsePrefixExpression
         prefixParseFns[TokenType.Minus] = ::parsePrefixExpression
         prefixParseFns[TokenType.LParen] = ::parseGroupedExpression
+        prefixParseFns[TokenType.If] = ::parseIfExpression
 
         infixParseFns[TokenType.Plus] = ::parseInfixExpression
         infixParseFns[TokenType.Minus] = ::parseInfixExpression
@@ -203,6 +204,72 @@ data class Parser(private val lexer: Lexer) {
         return exp
     }
 
+    private fun parseIfExpression(): Expression {
+        val token = currToken
+
+        if (!expectPeek<TokenType.LParen>()) {
+            errors += Error(
+                "expected LParen, but got ${peekToken.type}",
+                peekToken.line,
+                peekToken.position
+            )
+        }
+
+        nextToken()
+
+        val condition = parseExpression(Precedence.LOWEST)
+
+        if (!expectPeek<TokenType.RParen>()) {
+            errors += Error(
+                "expected RParen, but got ${peekToken.type}",
+                peekToken.line,
+                peekToken.position
+            )
+        }
+
+        if (!expectPeek<TokenType.LBrace>()) {
+            errors += Error(
+                "expected LBrace, but got ${peekToken.type}",
+                peekToken.line,
+                peekToken.position
+            )
+        }
+
+        val consequence = parseBlockStatement()
+
+        if (peekToken.type is TokenType.Else) {
+            nextToken()
+
+            if (!expectPeek<TokenType.LBrace>()) {
+                errors += Error(
+                    "expected LBrace, but got ${peekToken.type}",
+                    peekToken.line,
+                    peekToken.position
+                )
+            }
+
+            val alternative = parseBlockStatement()
+
+            return IfExpression(token, condition, consequence, alternative)
+        }
+
+        return IfExpression(token, condition, consequence, null)
+    }
+
+    private fun parseBlockStatement(): BlockStatement {
+        val token = currToken
+
+        val statements = mutableListOf<Statement>()
+
+        nextToken()
+
+        while (currToken.type !is TokenType.RBrace && currToken.type !is TokenType.EOF) {
+            statements += parseStatement()
+            nextToken()
+        }
+
+        return BlockStatement(token, statements)
+    }
 
     private inline fun <reified T : TokenType> expectPeek(): Boolean {
         return if (peekToken.type is T) {

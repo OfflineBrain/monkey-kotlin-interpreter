@@ -79,3 +79,16 @@ data class ExpressionStatement(
     }
 }
 
+data class BlockStatement(
+    val token: Token,
+    val statements: List<Statement>
+) : Statement {
+    override fun tokenLiteral(): String {
+        return token.literal
+    }
+
+    override fun render(): String {
+        return "{\n${statements.joinToString(separator = "\n") { it.render() }}\n}"
+    }
+}
+

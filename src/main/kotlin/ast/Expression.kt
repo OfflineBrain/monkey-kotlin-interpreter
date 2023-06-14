@@ -79,3 +79,24 @@ data class InfixExpression(
         return "(${left.render()} $operator ${right.render()})"
     }
 }
+
+data class IfExpression(
+    val token: Token,
+    val condition: Expression,
+    val consequence: BlockStatement,
+    val alternative: BlockStatement? = null
+) : Expression {
+    override fun tokenLiteral(): String {
+        return token.literal
+    }
+
+    override fun render(): String {
+        val alternative = if (alternative != null) {
+            " else ${alternative.render()}"
+        } else {
+            ""
+        }
+        return """if ${condition.render()}
+            | ${consequence.render()}$alternative""".trimMargin()
+    }
+}
