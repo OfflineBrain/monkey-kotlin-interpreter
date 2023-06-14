@@ -45,6 +45,7 @@ data class Parser(private val lexer: Lexer) {
         prefixParseFns[TokenType.False] = ::parseBooleanLiteral
         prefixParseFns[TokenType.Exclamation] = ::parsePrefixExpression
         prefixParseFns[TokenType.Minus] = ::parsePrefixExpression
+        prefixParseFns[TokenType.LParen] = ::parseGroupedExpression
 
         infixParseFns[TokenType.Plus] = ::parseInfixExpression
         infixParseFns[TokenType.Minus] = ::parseInfixExpression
@@ -55,6 +56,19 @@ data class Parser(private val lexer: Lexer) {
         infixParseFns[TokenType.Lt] = ::parseInfixExpression
         infixParseFns[TokenType.Gt] = ::parseInfixExpression
 
+    }
+
+    fun parseProgram(): Program {
+        val statements = mutableListOf<Statement>()
+        while (currToken.type !is TokenType.EOF) {
+            statements += parseStatement()
+            nextToken()
+        }
+        return Program(statements)
+    }
+
+    fun errors(): String {
+        return errors.joinToString("\n") { it.message }
     }
 
     private fun peekPrecedence(): Precedence {
@@ -75,15 +89,6 @@ data class Parser(private val lexer: Lexer) {
 
     private fun parseBooleanLiteral(): BooleanLiteral {
         return BooleanLiteral(currToken)
-    }
-
-    fun parseProgram(): Program {
-        val statements = mutableListOf<Statement>()
-        while (currToken.type !is TokenType.EOF) {
-            statements += parseStatement()
-            nextToken()
-        }
-        return Program(statements)
     }
 
     private fun nextToken() {
@@ -142,7 +147,7 @@ data class Parser(private val lexer: Lexer) {
         val prefix = prefixParseFns[currToken.type]
         if (prefix == null) {
             errors += Error(
-                "no prefix parse function for ${currToken.type}",
+                "no PREFIX parse function for ${currToken.type}",
                 currToken.line,
                 currToken.position
             )
@@ -155,7 +160,7 @@ data class Parser(private val lexer: Lexer) {
             val infix = infixParseFns[peekToken.type]
             if (infix == null) {
                 errors += Error(
-                    "no infix parse function for ${peekToken.type}",
+                    "no INFIX parse function for ${peekToken.type}",
                     peekToken.line,
                     peekToken.position
                 )
@@ -183,6 +188,19 @@ data class Parser(private val lexer: Lexer) {
         val precedence = currPrecedence()
         nextToken()
         return InfixExpression(token, left, parseExpression(precedence))
+    }
+
+    private fun parseGroupedExpression(): Expression {
+        nextToken()
+        val exp = parseExpression(Precedence.LOWEST)
+        if (!expectPeek<TokenType.RParen>()) {
+            errors += Error(
+                "expected RParen, but got ${peekToken.type}",
+                peekToken.line,
+                peekToken.position
+            )
+        }
+        return exp
     }
 
 
