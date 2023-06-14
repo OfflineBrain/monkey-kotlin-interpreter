@@ -467,6 +467,24 @@ class ParserTest : ExpectSpec({
                         assertEquals(expected, program.statements[0])
                     }
                 }
+
+                data.map { it.first }.joinToString("\n").let { input ->
+                    val lexer = Lexer(input)
+                    val parser = Parser(lexer)
+                    val program = parser.parseProgram()
+
+                    expect("no errors") {
+                        assertEquals(0, parser.errors.size)
+                    }
+
+                    expect("parsed all statements") {
+                        assertEquals(data.size, program.statements.size)
+                    }
+
+                    println(
+                        program.render()
+                    )
+                }
             }
         }
 

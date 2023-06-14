@@ -4,17 +4,12 @@ import Token
 
 sealed interface Node {
     fun tokenLiteral(): String
+
+    fun render(): String
 }
 
 interface Statement : Node
 
-interface Expression : Node
-
-object Nothing : Expression {
-    override fun tokenLiteral(): String {
-        return ""
-    }
-}
 
 enum class Precedence(val value: Int) {
     LOWEST(0),
@@ -38,52 +33,9 @@ data class Program(val statements: List<Statement>) : Node {
     override fun toString(): String {
         return statements.joinToString(separator = "\n") { it.toString() }
     }
-}
 
-data class Identifier(val token: Token) : Expression {
-    override fun tokenLiteral(): String {
-        return token.literal
-    }
-}
-
-data class IntegerLiteral(val token: Token) : Expression {
-    val value: Int = token.literal.toInt()
-
-    override fun tokenLiteral(): String {
-        return token.literal
-    }
-}
-
-data class BooleanLiteral(val token: Token) : Expression {
-    val value: Boolean = token.literal.toBoolean()
-
-    override fun tokenLiteral(): String {
-        return token.literal
-    }
-}
-
-data class PrefixExpression(
-    val token: Token,
-    val right: Expression
-) : Expression {
-    val operator: String
-        get() = token.literal
-
-    override fun tokenLiteral(): String {
-        return token.literal
-    }
-}
-
-data class InfixExpression(
-    val token: Token,
-    val left: Expression,
-    val right: Expression
-) : Expression {
-    val operator: String
-        get() = token.literal
-
-    override fun tokenLiteral(): String {
-        return token.literal
+    override fun render(): String {
+        return statements.joinToString(separator = "\n") { it.render() }
     }
 }
 
@@ -95,6 +47,10 @@ data class LetStatement(
     override fun tokenLiteral(): String {
         return token.literal
     }
+
+    override fun render(): String {
+        return "${tokenLiteral()} ${name.render()} = ${value.render()};"
+    }
 }
 
 data class ReturnStatement(
@@ -104,6 +60,10 @@ data class ReturnStatement(
     override fun tokenLiteral(): String {
         return token.literal
     }
+
+    override fun render(): String {
+        return "${tokenLiteral()} ${value.render()};"
+    }
 }
 
 data class ExpressionStatement(
@@ -112,6 +72,10 @@ data class ExpressionStatement(
 ) : Statement {
     override fun tokenLiteral(): String {
         return token.literal
+    }
+
+    override fun render(): String {
+        return "${expression.render()};"
     }
 }
 
