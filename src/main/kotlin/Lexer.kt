@@ -19,59 +19,59 @@ class Lexer(val input: String) {
             '=' -> {
                 if (peekChar() == '=') {
                     readChar()
-                    Token.fromString("==", line, linePosition - 1)
+                    Token(TokenType.Eq, line, linePosition - 1)
                 } else {
-                    Token.fromString("=", line, linePosition)
+                    Token(TokenType.Assign, line, linePosition)
                 }
             }
 
-            '+' -> Token.fromString("+", line, linePosition)
-            '-' -> Token.fromString("-", line, linePosition)
-            '*' -> Token.fromString("*", line, linePosition)
-            '/' -> Token.fromString("/", line, linePosition)
-            '(' -> Token.fromString("(", line, linePosition)
-            ')' -> Token.fromString(")", line, linePosition)
-            '{' -> Token.fromString("{", line, linePosition)
-            '}' -> Token.fromString("}", line, linePosition)
-            ';' -> Token.fromString(";", line, linePosition)
-            ':' -> Token.fromString("", line, linePosition)
-            ',' -> Token.fromString(",", line, linePosition)
-            '.' -> Token.fromString(".", line, linePosition)
+            '+' -> Token(TokenType.Plus, line, linePosition)
+            '-' -> Token(TokenType.Minus, line, linePosition)
+            '*' -> Token(TokenType.Multiply, line, linePosition)
+            '/' -> Token(TokenType.Divide, line, linePosition)
+            '(' -> Token(TokenType.LParen, line, linePosition)
+            ')' -> Token(TokenType.RParen, line, linePosition)
+            '{' -> Token(TokenType.LBrace, line, linePosition)
+            '}' -> Token(TokenType.RBrace, line, linePosition)
+            ';' -> Token(TokenType.Semicolon, line, linePosition)
+            ':' -> Token(TokenType.Colon, line, linePosition)
+            ',' -> Token(TokenType.Comma, line, linePosition)
+            '.' -> Token(TokenType.Dot, line, linePosition)
             '!' -> {
                 if (peekChar() == '=') {
                     readChar()
-                    Token.fromString("!=", line, linePosition - 1)
+                    Token(TokenType.NotEq, line, linePosition - 1)
                 } else {
-                    Token.fromString("!", line, linePosition)
+                    Token(TokenType.Exclamation, line, linePosition)
                 }
             }
 
             '<' -> {
                 if (peekChar() == '=') {
                     readChar()
-                    Token.fromString("<=", line, linePosition - 1)
+                    Token(TokenType.Lte, line, linePosition - 1)
                 } else {
-                    Token.fromString("<", line, linePosition)
+                    Token(TokenType.Lt, line, linePosition)
                 }
             }
 
             '>' -> {
                 if (peekChar() == '=') {
                     readChar()
-                    Token.fromString(">=", line, linePosition - 1)
+                    Token(TokenType.Gte, line, linePosition - 1)
                 } else {
-                    Token.fromString(">", line, linePosition)
+                    Token(TokenType.Gt, line, linePosition)
                 }
             }
 
-            '?' -> Token.fromString("?", line, linePosition)
-            '"' -> Token.fromString("\"", line, linePosition)
-            0.toChar() -> Token.fromString(0.toChar().toString(), line, linePosition)
+            '?' -> Token(TokenType.Question, line, linePosition)
+            '"' -> Token(TokenType.Quote, line, linePosition)
+            0.toChar() -> Token(TokenType.EOF, line, linePosition)
             else -> {
                 when {
                     isLetter(ch) || isUnderscore(ch) -> return readWord()
                     isDigit(ch) -> return readNumber()
-                    else -> Token.illegal(line, linePosition)
+                    else -> Token(TokenType.Illegal, line, linePosition)
                 }
             }
         }.also {
@@ -122,9 +122,20 @@ class Lexer(val input: String) {
     }
 
     private fun readWord(): Token {
-        val beingLine = line
-        val beingLinePosition = linePosition
-        return Token.fromString(readIdentifier(), beingLine, beingLinePosition)
+        val line = line
+        val position = linePosition
+        return when (val identifier = readIdentifier()) {
+            "if" -> Token(TokenType.If, line, position)
+            "else" -> Token(TokenType.Else, line, position)
+            "for" -> Token(TokenType.For, line, position)
+            "while" -> Token(TokenType.While, line, position)
+            "return" -> Token(TokenType.Return, line, position)
+            "let" -> Token(TokenType.Let, line, position)
+            "fn" -> Token(TokenType.Function, line, position)
+            "true" -> Token(TokenType.True, line, position)
+            "false" -> Token(TokenType.False, line, position)
+            else -> Token(TokenType.Identifier, line, position, identifier)
+        }
     }
 
     private fun readNumber(): Token {
@@ -137,10 +148,10 @@ class Lexer(val input: String) {
         }
 
         if (isLetter(ch)) {
-            return Token.illegal(beingLine, beingLinePosition)
+            return Token(TokenType.Illegal, beingLine, beingLinePosition)
         }
 
-        return Token.number(input.substring(beginPosition, position), beingLine, beingLinePosition)
+        return Token(TokenType.Number, beingLine, beingLinePosition, input.substring(beginPosition, position))
     }
 
     private fun isLetter(ch: Char): Boolean {

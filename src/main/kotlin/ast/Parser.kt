@@ -9,8 +9,8 @@ typealias prefixParseFn = () -> Expression
 typealias infixParseFn = (Expression) -> Expression
 
 data class Parser(private val lexer: Lexer) {
-    private var currToken: Token = Token.fromString(0.toChar().toString(), 0, 0)
-    private var peekToken: Token = Token.fromString(0.toChar().toString(), 0, 0)
+    private var currToken: Token = Token(TokenType.EOF, 0, 0)
+    private var peekToken: Token = Token(TokenType.EOF, 0, 0)
 
     val errors = mutableListOf<Error>()
 
@@ -108,7 +108,7 @@ data class Parser(private val lexer: Lexer) {
                 expectPeek<TokenType.Assign>()
             }
         } else {
-            Identifier(Token.illegal(currToken.line, currToken.position))
+            Identifier(Token(TokenType.Illegal, currToken.line, currToken.position))
         }
 
 

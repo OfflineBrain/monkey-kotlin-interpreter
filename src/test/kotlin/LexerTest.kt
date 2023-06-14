@@ -1,10 +1,11 @@
-import kotlin.test.Test
+import io.kotest.core.spec.style.ExpectSpec
 import kotlin.test.assertEquals
 
-class LexerTest {
-    @Test
-    fun test() {
-        val input = """
+class LexerTest : ExpectSpec({
+    context("a lexer") {
+
+        context("valid input") {
+            val input = """
         let  five = 5;
         let ten = 10;
         let add = fn(x, y) {
@@ -24,88 +25,92 @@ class LexerTest {
         10 != 9;
         """.trimIndent()
 
-        val expect = listOf(
-            Token.fromString("let", 0, 0),
-            Token.fromString("five", 0, 5),
-            Token.fromString("=", 0, 10),
-            Token.number("5", 0, 12),
-            Token.fromString(";", 0, 13),
-            Token.fromString("let", 1, 0),
-            Token.fromString("ten", 1, 4),
-            Token.fromString("=", 1, 8),
-            Token.number("10", 1, 10),
-            Token.fromString(";", 1, 12),
-            Token.fromString("let", 2, 0),
-            Token.fromString("add", 2, 4),
-            Token.fromString("=", 2, 8),
-            Token.fromString("fn", 2, 10),
-            Token.fromString("(", 2, 12),
-            Token.fromString("x", 2, 13),
-            Token.fromString(",", 2, 14),
-            Token.fromString("y", 2, 16),
-            Token.fromString(")", 2, 17),
-            Token.fromString("{", 2, 19),
-            Token.fromString("x", 3, 4),
-            Token.fromString("+", 3, 6),
-            Token.fromString("y", 3, 8),
-            Token.fromString(";", 3, 9),
-            Token.fromString("}", 4, 0),
-            Token.fromString(";", 4, 1),
-            Token.fromString("let", 5, 0),
-            Token.fromString("result", 5, 4),
-            Token.fromString("=", 5, 11),
-            Token.fromString("add", 5, 13),
-            Token.fromString("(", 5, 16),
-            Token.fromString("five", 5, 17),
-            Token.fromString(",", 5, 21),
-            Token.fromString("ten", 5, 23),
-            Token.fromString(")", 5, 26),
-            Token.fromString(";", 5, 27),
-            Token.fromString("!", 6, 0),
-            Token.fromString("-", 6, 1),
-            Token.fromString("/", 6, 2),
-            Token.fromString("*", 6, 3),
-            Token.number("5", 6, 4),
-            Token.fromString(";", 6, 5),
-            Token.number("5", 7, 0),
-            Token.fromString("<", 7, 2),
-            Token.number("10", 7, 4),
-            Token.fromString(">", 7, 7),
-            Token.number("5", 7, 9),
-            Token.fromString(";", 7, 10),
-            Token.fromString("if", 9, 0),
-            Token.fromString("(", 9, 3),
-            Token.number("5", 9, 4),
-            Token.fromString("<", 9, 6),
-            Token.number("10", 9, 8),
-            Token.fromString(")", 9, 10),
-            Token.fromString("{", 9, 12),
-            Token.fromString("return", 10, 4),
-            Token.fromString("true", 10, 11),
-            Token.fromString(";", 10, 15),
-            Token.fromString("}", 11, 0),
-            Token.fromString("else", 11, 2),
-            Token.fromString("{", 11, 7),
-            Token.fromString("return", 12, 4),
-            Token.fromString("false", 12, 11),
-            Token.fromString(";", 12, 16),
-            Token.fromString("}", 13, 0),
-            Token.number("10", 15, 0),
-            Token.fromString("==", 15, 3),
-            Token.number("10", 15, 6),
-            Token.fromString(";", 15, 8),
-            Token.number("10", 16, 0),
-            Token.fromString("!=", 16, 3),
-            Token.number("9", 16, 6),
-            Token.fromString(";", 16, 7),
-            Token.fromString(0.toChar().toString(), 16, 8)
-        )
+            val expect = listOf(
+                Token(TokenType.Let, 0, 0),
+                Token(TokenType.Identifier, 0, 5, "five"),
+                Token(TokenType.Assign, 0, 10),
+                Token(TokenType.Number, 0, 12, "5"),
+                Token(TokenType.Semicolon, 0, 13),
+                Token(TokenType.Let, 1, 0),
+                Token(TokenType.Identifier, 1, 4, "ten"),
+                Token(TokenType.Assign, 1, 8),
+                Token(TokenType.Number, 1, 10, "10"),
+                Token(TokenType.Semicolon, 1, 12),
+                Token(TokenType.Let, 2, 0),
+                Token(TokenType.Identifier, 2, 4, "add"),
+                Token(TokenType.Assign, 2, 8),
+                Token(TokenType.Function, 2, 10),
+                Token(TokenType.LParen, 2, 12),
+                Token(TokenType.Identifier, 2, 13, "x"),
+                Token(TokenType.Comma, 2, 14),
+                Token(TokenType.Identifier, 2, 16, "y"),
+                Token(TokenType.RParen, 2, 17),
+                Token(TokenType.LBrace, 2, 19),
+                Token(TokenType.Identifier, 3, 4, "x"),
+                Token(TokenType.Plus, 3, 6),
+                Token(TokenType.Identifier, 3, 8, "y"),
+                Token(TokenType.Semicolon, 3, 9),
+                Token(TokenType.RBrace, 4, 0),
+                Token(TokenType.Semicolon, 4, 1),
+                Token(TokenType.Let, 5, 0),
+                Token(TokenType.Identifier, 5, 4, "result"),
+                Token(TokenType.Assign, 5, 11),
+                Token(TokenType.Identifier, 5, 13, "add"),
+                Token(TokenType.LParen, 5, 16),
+                Token(TokenType.Identifier, 5, 17, "five"),
+                Token(TokenType.Comma, 5, 21),
+                Token(TokenType.Identifier, 5, 23, "ten"),
+                Token(TokenType.RParen, 5, 26),
+                Token(TokenType.Semicolon, 5, 27),
+                Token(TokenType.Exclamation, 6, 0),
+                Token(TokenType.Minus, 6, 1),
+                Token(TokenType.Divide, 6, 2),
+                Token(TokenType.Multiply, 6, 3),
+                Token(TokenType.Number, 6, 4, "5"),
+                Token(TokenType.Semicolon, 6, 5),
+                Token(TokenType.Number, 7, 0, "5"),
+                Token(TokenType.Lt, 7, 2),
+                Token(TokenType.Number, 7, 4, "10"),
+                Token(TokenType.Gt, 7, 7),
+                Token(TokenType.Number, 7, 9, "5"),
+                Token(TokenType.Semicolon, 7, 10),
+                Token(TokenType.If, 9, 0),
+                Token(TokenType.LParen, 9, 3),
+                Token(TokenType.Number, 9, 4, "5"),
+                Token(TokenType.Lt, 9, 6),
+                Token(TokenType.Number, 9, 8, "10"),
+                Token(TokenType.RParen, 9, 10),
+                Token(TokenType.LBrace, 9, 12),
+                Token(TokenType.Return, 10, 4),
+                Token(TokenType.True, 10, 11),
+                Token(TokenType.Semicolon, 10, 15),
+                Token(TokenType.RBrace, 11, 0),
+                Token(TokenType.Else, 11, 2),
+                Token(TokenType.LBrace, 11, 7),
+                Token(TokenType.Return, 12, 4),
+                Token(TokenType.False, 12, 11),
+                Token(TokenType.Semicolon, 12, 16),
+                Token(TokenType.RBrace, 13, 0),
+                Token(TokenType.Number, 15, 0, "10"),
+                Token(TokenType.Eq, 15, 3),
+                Token(TokenType.Number, 15, 6, "10"),
+                Token(TokenType.Semicolon, 15, 8),
+                Token(TokenType.Number, 16, 0, "10"),
+                Token(TokenType.NotEq, 16, 3),
+                Token(TokenType.Number, 16, 6, "9"),
+                Token(TokenType.Semicolon, 16, 7),
+                Token(TokenType.EOF, 16, 8)
+            )
 
-        val lexer = Lexer(input)
+            val lexer = Lexer(input)
 
-        expect.forEachIndexed { idx, token ->
-            val tok = lexer.nextToken()
-            assertEquals(token, tok, "token[$idx] [$tok] is not equal to expected token [$token]")
+            expect.forEachIndexed { idx, token ->
+                val tok = lexer.nextToken()
+
+                expect("token[$idx] ${token.render()}") {
+                    assertEquals(token, tok, "token[$idx] [$tok] is not Assignual to expected token [$token]")
+                }
+            }
         }
     }
-}
+})
