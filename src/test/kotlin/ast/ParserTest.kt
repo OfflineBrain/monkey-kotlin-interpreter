@@ -45,9 +45,12 @@ class ParserTest : ExpectSpec({
                 val parser = Parser(lexer)
                 val program = parser.parseProgram()
 
-                expect("should parse successfully") {
-                    assertEquals(3, program.statements.size)
-                    assertEquals(0, parser.errors.size)
+                expect("should parse all statements") {
+                    assertEquals(3, program.statements.size, program.render())
+                }
+
+                expect("should not contain any errors") {
+                    assertEquals(0, parser.errors.size, parser.errors())
                 }
 
 
@@ -55,6 +58,7 @@ class ParserTest : ExpectSpec({
                     expect("should parse let statement: $i") {
                         val statement = program.statements[i] as LetStatement
                         assertLiteral(expect.first, statement.name.token)
+                        assertLiteral(expect.second.literal, statement.value.tokenLiteral())
                     }
                 }
             }

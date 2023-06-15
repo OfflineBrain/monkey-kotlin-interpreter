@@ -94,7 +94,7 @@ data class Parser(private val lexer: Lexer) {
     }
 
     fun errors(): String {
-        return errors.joinToString("\n") { it.message }
+        return errors.joinToString("\n") { "${it.message} at [${it.line}:${it.position}]" }
     }
 
     private fun peekPrecedence(): Precedence {
@@ -133,21 +133,18 @@ data class Parser(private val lexer: Lexer) {
     private fun parseLetStatement(): LetStatement {
         val letToken = currToken
 
-
         val name = if (expectPeek<TokenType.Identifier>()) {
-            Identifier.Id(currToken).also {
-                expectPeek(TokenType.Assign)
-            }
+            Identifier.Id(currToken)
         } else {
             Identifier.Invalid(currToken)
         }
 
+        expectPeek(TokenType.Assign)
+        nextToken()
 
-        while (currToken.type !is TokenType.Semicolon) {
-            nextToken()
-        }
+        val expression = parseExpressionStatement()
 
-        return LetStatement(letToken, name, Nothing)
+        return LetStatement(letToken, name, expression.expression)
     }
 
     private fun parseReturnStatement(): ReturnStatement {
