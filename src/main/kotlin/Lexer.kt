@@ -19,59 +19,59 @@ class Lexer(val input: String) {
             '=' -> {
                 if (peekChar() == '=') {
                     readChar()
-                    Token(TokenType.Eq, line, linePosition - 1)
+                    Token.Eq(line, linePosition - 1)
                 } else {
-                    Token(TokenType.Assign, line, linePosition)
+                    Token.Assign(line, linePosition)
                 }
             }
 
-            '+' -> Token(TokenType.Plus, line, linePosition)
-            '-' -> Token(TokenType.Minus, line, linePosition)
-            '*' -> Token(TokenType.Multiply, line, linePosition)
-            '/' -> Token(TokenType.Divide, line, linePosition)
-            '(' -> Token(TokenType.LParen, line, linePosition)
-            ')' -> Token(TokenType.RParen, line, linePosition)
-            '{' -> Token(TokenType.LBrace, line, linePosition)
-            '}' -> Token(TokenType.RBrace, line, linePosition)
-            ';' -> Token(TokenType.Semicolon, line, linePosition)
-            ':' -> Token(TokenType.Colon, line, linePosition)
-            ',' -> Token(TokenType.Comma, line, linePosition)
-            '.' -> Token(TokenType.Dot, line, linePosition)
+            '+' -> Token.Plus(line, linePosition)
+            '-' -> Token.Minus(line, linePosition)
+            '*' -> Token.Multiply(line, linePosition)
+            '/' -> Token.Divide(line, linePosition)
+            '(' -> Token.LParen(line, linePosition)
+            ')' -> Token.RParen(line, linePosition)
+            '{' -> Token.LBrace(line, linePosition)
+            '}' -> Token.RBrace(line, linePosition)
+            ';' -> Token.Semicolon(line, linePosition)
+            ':' -> Token.Colon(line, linePosition)
+            ',' -> Token.Comma(line, linePosition)
+            '.' -> Token.Dot(line, linePosition)
             '!' -> {
                 if (peekChar() == '=') {
                     readChar()
-                    Token(TokenType.NotEq, line, linePosition - 1)
+                    Token.NotEq(line, linePosition - 1)
                 } else {
-                    Token(TokenType.Exclamation, line, linePosition)
+                    Token.Exclamation(line, linePosition)
                 }
             }
 
             '<' -> {
                 if (peekChar() == '=') {
                     readChar()
-                    Token(TokenType.Lte, line, linePosition - 1)
+                    Token.Lte(line, linePosition - 1)
                 } else {
-                    Token(TokenType.Lt, line, linePosition)
+                    Token.Lt(line, linePosition)
                 }
             }
 
             '>' -> {
                 if (peekChar() == '=') {
                     readChar()
-                    Token(TokenType.Gte, line, linePosition - 1)
+                    Token.Gte(line, linePosition - 1)
                 } else {
-                    Token(TokenType.Gt, line, linePosition)
+                    Token.Gt(line, linePosition)
                 }
             }
 
-            '?' -> Token(TokenType.Question, line, linePosition)
-            '"' -> Token(TokenType.Quote, line, linePosition)
-            0.toChar() -> Token(TokenType.EOF, line, linePosition)
+            '?' -> Token.Question(line, linePosition)
+            '"' -> Token.Quote(line, linePosition)
+            0.toChar() -> Token.EOF(line, linePosition)
             else -> {
                 when {
                     isLetter(ch) || isUnderscore(ch) -> return readWord()
                     isDigit(ch) -> return readNumber()
-                    else -> Token(TokenType.Illegal, line, linePosition)
+                    else -> Token.Illegal(line, linePosition)
                 }
             }
         }.also {
@@ -125,16 +125,16 @@ class Lexer(val input: String) {
         val line = line
         val position = linePosition
         return when (val identifier = readIdentifier()) {
-            "if" -> Token(TokenType.If, line, position)
-            "else" -> Token(TokenType.Else, line, position)
-            "for" -> Token(TokenType.For, line, position)
-            "while" -> Token(TokenType.While, line, position)
-            "return" -> Token(TokenType.Return, line, position)
-            "let" -> Token(TokenType.Let, line, position)
-            "fn" -> Token(TokenType.Function, line, position)
-            "true" -> Token(TokenType.True, line, position)
-            "false" -> Token(TokenType.False, line, position)
-            else -> Token(TokenType.Identifier, line, position, identifier)
+            "if" -> Token.If(line, position)
+            "else" -> Token.Else(line, position)
+            "for" -> Token.For(line, position)
+            "while" -> Token.While(line, position)
+            "return" -> Token.Return(line, position)
+            "let" -> Token.Let(line, position)
+            "fn" -> Token.Function(line, position)
+            "true" -> Token.True(line, position)
+            "false" -> Token.False(line, position)
+            else -> Token.Identifier(identifier, line, position)
         }
     }
 
@@ -148,10 +148,10 @@ class Lexer(val input: String) {
         }
 
         if (isLetter(ch)) {
-            return Token(TokenType.Illegal, beingLine, beingLinePosition)
+            return Token.Illegal(beingLine, beingLinePosition)
         }
 
-        return Token(TokenType.Number, beingLine, beingLinePosition, input.substring(beginPosition, position))
+        return Token.Number(input.substring(beginPosition, position).toInt(), beingLine, beingLinePosition)
     }
 
     private fun isLetter(ch: Char): Boolean {

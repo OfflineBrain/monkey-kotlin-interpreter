@@ -2,7 +2,6 @@ package ast
 
 import Lexer
 import Token
-import TokenType
 import io.kotest.core.spec.style.ExpectSpec
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -36,9 +35,9 @@ class ParserTest : ExpectSpec({
                 """.trimIndent()
 
                 val expected = listOf(
-                    Token(TokenType.Identifier, 0, 4, "x") to Token(TokenType.Number, 0, 8, "5"),
-                    Token(TokenType.Identifier, 1, 4, "y") to Token(TokenType.Number, 1, 8, "10"),
-                    Token(TokenType.Identifier, 2, 4, "foobar") to Token(TokenType.Number, 2, 13, "838383"),
+                    Token.Identifier("x", 0, 4) to Token.Number(5, 0, 8),
+                    Token.Identifier("y", 1, 4) to Token.Number(10, 1, 8),
+                    Token.Identifier("foobar", 2, 4) to Token.Number(838383, 2, 13),
                 )
 
                 val lexer = Lexer(input)
@@ -71,7 +70,7 @@ class ParserTest : ExpectSpec({
                 """.trimIndent()
 
                 val expected = listOf(
-                    Token(TokenType.Identifier, 0, 4, "x") to Token(TokenType.Number, 0, 8, "5"),
+                    Token.Identifier("x", 0, 4) to Token.Number(5, 0, 8),
                 )
 
                 val lexer = Lexer(input)
@@ -103,9 +102,9 @@ class ParserTest : ExpectSpec({
             """.trimIndent()
 
             val expected = listOf(
-                Token(TokenType.Return, 0, 0) to Token(TokenType.Number, 0, 7, "5"),
-                Token(TokenType.Return, 1, 0) to Token(TokenType.Number, 1, 7, "10"),
-                Token(TokenType.Return, 2, 0) to Token(TokenType.Number, 2, 7, "993322")
+                Token.Return(0, 0) to Token.Number(5, 0, 7),
+                Token.Return(1, 0) to Token.Number(10, 1, 7),
+                Token.Return(2, 0) to Token.Number(993322, 2, 7),
             )
 
             val lexer = Lexer(input)
@@ -136,7 +135,7 @@ class ParserTest : ExpectSpec({
             val input = "foobar;"
 
             val expected = listOf(
-                Token(TokenType.Identifier, 0, 6, "foobar"),
+                Token.Identifier("foobar", 0, 6),
             )
 
             val lexer = Lexer(input)
@@ -166,7 +165,7 @@ class ParserTest : ExpectSpec({
             val input = "5;"
 
             val expected = listOf(
-                Token(TokenType.Number, 0, 0, "5"),
+                Token.Number(5, 0, 0),
             )
 
             val lexer = Lexer(input)
@@ -204,10 +203,10 @@ class ParserTest : ExpectSpec({
             """.trimIndent()
 
             val expected = listOf(
-                Token(TokenType.Exclamation, 0, 0) to Token(TokenType.Number, 0, 1, "5"),
-                Token(TokenType.Minus, 1, 0) to Token(TokenType.Number, 1, 1, "15"),
-                Token(TokenType.Exclamation, 2, 0) to Token(TokenType.True, 2, 1),
-                Token(TokenType.Exclamation, 3, 0) to Token(TokenType.False, 3, 1),
+                Token.Exclamation(0, 0) to Token.Number(5, 0, 1),
+                Token.Minus(1, 0) to Token.Number(15, 1, 1),
+                Token.Exclamation(2, 0) to Token.True(2, 1),
+                Token.Exclamation(3, 0) to Token.False(3, 1),
             )
 
             val lexer = Lexer(input)
@@ -242,44 +241,44 @@ class ParserTest : ExpectSpec({
             context("single operator") {
                 val data = listOf(
                     "5 + 5;" to listOf(
-                        Token(TokenType.Number, 0, 0, "5"),
-                        Token(TokenType.Plus, 0, 2),
-                        Token(TokenType.Number, 0, 4, "5"),
+                        Token.Number(5, 0, 0),
+                        Token.Plus(0, 2),
+                        Token.Number(5, 0, 4),
                     ),
                     "5 - 5;" to listOf(
-                        Token(TokenType.Number, 0, 0, "5"),
-                        Token(TokenType.Minus, 0, 2),
-                        Token(TokenType.Number, 0, 4, "5"),
+                        Token.Number(5, 0, 0),
+                        Token.Minus(0, 2),
+                        Token.Number(5, 0, 4),
                     ),
                     "5 * 5;" to listOf(
-                        Token(TokenType.Number, 0, 0, "5"),
-                        Token(TokenType.Multiply, 0, 2),
-                        Token(TokenType.Number, 0, 4, "5"),
+                        Token.Number(5, 0, 0),
+                        Token.Multiply(0, 2),
+                        Token.Number(5, 0, 4),
                     ),
                     "5 / 5;" to listOf(
-                        Token(TokenType.Number, 0, 0, "5"),
-                        Token(TokenType.Divide, 0, 2),
-                        Token(TokenType.Number, 0, 4, "5"),
+                        Token.Number(5, 0, 0),
+                        Token.Divide(0, 2),
+                        Token.Number(5, 0, 4),
                     ),
                     "5 > 5;" to listOf(
-                        Token(TokenType.Number, 0, 0, "5"),
-                        Token(TokenType.Gt, 0, 2),
-                        Token(TokenType.Number, 0, 4, "5"),
+                        Token.Number(5, 0, 0),
+                        Token.Gt(0, 2),
+                        Token.Number(5, 0, 4),
                     ),
                     "5 < 5;" to listOf(
-                        Token(TokenType.Number, 0, 0, "5"),
-                        Token(TokenType.Lt, 0, 2),
-                        Token(TokenType.Number, 0, 4, "5"),
+                        Token.Number(5, 0, 0),
+                        Token.Lt(0, 2),
+                        Token.Number(5, 0, 4),
                     ),
                     "5 == 5;" to listOf(
-                        Token(TokenType.Number, 0, 0, "5"),
-                        Token(TokenType.Eq, 0, 2),
-                        Token(TokenType.Number, 0, 5, "5"),
+                        Token.Number(5, 0, 0),
+                        Token.Eq(0, 2),
+                        Token.Number(5, 0, 4),
                     ),
                     "5 != 5;" to listOf(
-                        Token(TokenType.Number, 0, 0, "5"),
-                        Token(TokenType.NotEq, 0, 2),
-                        Token(TokenType.Number, 0, 5, "5"),
+                        Token.Number(5, 0, 0),
+                        Token.NotEq(0, 2),
+                        Token.Number(5, 0, 4),
                     ),
                 )
                 data.forEach { (input, expected) ->
@@ -315,160 +314,160 @@ class ParserTest : ExpectSpec({
             context("has precedence") {
                 val data = listOf(
                     "-a * b;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 6), InfixExpression(
-                            Token(TokenType.Multiply, 0, 3),
+                        Token.Semicolon(0, 4), InfixExpression(
+                            Token.Multiply(0, 3),
                             PrefixExpression(
-                                Token(TokenType.Minus, 0, 0),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 1, "a")),
+                                Token.Minus(0, 0),
+                                Identifier.Id(Token.Identifier("a", 0, 1)),
                             ),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 5, "b")),
+                            Identifier.Id(Token.Identifier("b", 0, 5)),
                         )
                     ),
                     "!-a;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 3), PrefixExpression(
-                            Token(TokenType.Exclamation, 0, 0),
+                        Token.Semicolon(0, 3), PrefixExpression(
+                            Token.Exclamation(0, 0),
                             PrefixExpression(
-                                Token(TokenType.Minus, 0, 1),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 2, "a")),
+                                Token.Minus(0, 1),
+                                Identifier.Id(Token.Identifier("a", 0, 2)),
                             ),
                         )
                     ),
                     "a + b + c;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 8), InfixExpression(
-                            Token(TokenType.Plus, 0, 3),
+                        Token.Semicolon(0, 8), InfixExpression(
+                            Token.Plus(0, 3),
                             InfixExpression(
-                                Token(TokenType.Plus, 0, 1),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 2, "b")),
+                                Token.Plus(0, 1),
+                                Identifier.Id(Token.Identifier("a", 0, 0)),
+                                Identifier.Id(Token.Identifier("b", 0, 2)),
                             ),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
+                            Identifier.Id(Token.Identifier("c", 0, 6)),
                         )
                     ),
                     "a + b - c;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 8), InfixExpression(
-                            Token(TokenType.Minus, 0, 3),
+                        Token.Semicolon(0, 8), InfixExpression(
+                            Token.Minus(0, 3),
                             InfixExpression(
-                                Token(TokenType.Plus, 0, 1),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 2, "b")),
+                                Token.Plus(0, 1),
+                                Identifier.Id(Token.Identifier("a", 0, 0)),
+                                Identifier.Id(Token.Identifier("b", 0, 2)),
                             ),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
+                            Identifier.Id(Token.Identifier("c", 0, 6)),
                         )
                     ),
                     "a * b * c;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 8), InfixExpression(
-                            Token(TokenType.Multiply, 0, 3),
+                        Token.Semicolon(0, 8), InfixExpression(
+                            Token.Multiply(0, 3),
                             InfixExpression(
-                                Token(TokenType.Multiply, 0, 1),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 2, "b")),
+                                Token.Multiply(0, 1),
+                                Identifier.Id(Token.Identifier("a", 0, 0)),
+                                Identifier.Id(Token.Identifier("b", 0, 2)),
                             ),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
+                            Identifier.Id(Token.Identifier("c", 0, 6)),
                         )
                     ),
                     "a * b / c;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 8), InfixExpression(
-                            Token(TokenType.Divide, 0, 3),
+                        Token.Semicolon(0, 8), InfixExpression(
+                            Token.Divide(0, 3),
                             InfixExpression(
-                                Token(TokenType.Multiply, 0, 1),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 2, "b")),
+                                Token.Multiply(0, 1),
+                                Identifier.Id(Token.Identifier("a", 0, 0)),
+                                Identifier.Id(Token.Identifier("b", 0, 2)),
                             ),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
+                            Identifier.Id(Token.Identifier("c", 0, 6)),
                         )
                     ),
                     "a + b / c;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 8), InfixExpression(
-                            Token(TokenType.Plus, 0, 3),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
+                        Token.Semicolon(0, 8), InfixExpression(
+                            Token.Plus(0, 3),
+                            Identifier.Id(Token.Identifier("a", 0, 0)),
                             InfixExpression(
-                                Token(TokenType.Divide, 0, 5),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 4, "b")),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
+                                Token.Divide(0, 5),
+                                Identifier.Id(Token.Identifier("b", 0, 4)),
+                                Identifier.Id(Token.Identifier("c", 0, 6)),
                             ),
                         )
                     ),
                     "a + b * c + d / e - f;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 20), InfixExpression(
-                            Token(TokenType.Minus, 0, 15),
+                        Token.Semicolon(0, 18), InfixExpression(
+                            Token.Minus(0, 13),
                             InfixExpression(
-                                Token(TokenType.Plus, 0, 3),
+                                Token.Plus(0, 3),
                                 InfixExpression(
-                                    Token(TokenType.Plus, 0, 1),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
+                                    Token.Plus(0, 1),
+                                    Identifier.Id(Token.Identifier("a", 0, 0)),
                                     InfixExpression(
-                                        Token(TokenType.Multiply, 0, 5),
-                                        Identifier.Id(Token(TokenType.Identifier, 0, 4, "b")),
-                                        Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
+                                        Token.Multiply(0, 5),
+                                        Identifier.Id(Token.Identifier("b", 0, 4)),
+                                        Identifier.Id(Token.Identifier("c", 0, 6)),
                                     ),
                                 ),
                                 InfixExpression(
-                                    Token(TokenType.Divide, 0, 11),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 10, "d")),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 12, "e")),
+                                    Token.Divide(0, 11),
+                                    Identifier.Id(Token.Identifier("d", 0, 10)),
+                                    Identifier.Id(Token.Identifier("e", 0, 12)),
                                 ),
                             ),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 18, "f")),
+                            Identifier.Id(Token.Identifier("f", 0, 16)),
                         )
                     ),
                     "3 + 4;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 4), InfixExpression(
-                            Token(TokenType.Plus, 0, 1),
-                            IntegerLiteral(Token(TokenType.Number, 0, 0, "3")),
-                            IntegerLiteral(Token(TokenType.Number, 0, 2, "4")),
+                        Token.Semicolon(0, 4), InfixExpression(
+                            Token.Plus(0, 2),
+                            IntegerLiteral(Token.Number(3, 0, 0)),
+                            IntegerLiteral(Token.Number(4, 0, 4)),
                         )
                     ),
                     "-5 * 5;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 5), InfixExpression(
-                            Token(TokenType.Multiply, 0, 2),
+                        Token.Semicolon(0, 5), InfixExpression(
+                            Token.Multiply(0, 3),
                             PrefixExpression(
-                                Token(TokenType.Minus, 0, 0),
-                                IntegerLiteral(Token(TokenType.Number, 0, 1, "5")),
+                                Token.Minus(0, 0),
+                                IntegerLiteral(Token.Number(5, 0, 1)),
                             ),
-                            IntegerLiteral(Token(TokenType.Number, 0, 4, "5")),
+                            IntegerLiteral(Token.Number(5, 0, 5)),
                         )
                     ),
                     "3 > 5 == false;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 12), InfixExpression(
-                            Token(TokenType.Eq, 0, 8),
+                        Token.Semicolon(0, 13), InfixExpression(
+                            Token.Eq(0, 9),
                             InfixExpression(
-                                Token(TokenType.Gt, 0, 2),
-                                IntegerLiteral(Token(TokenType.Number, 0, 0, "3")),
-                                IntegerLiteral(Token(TokenType.Number, 0, 4, "5")),
+                                Token.Gt(0, 3),
+                                IntegerLiteral(Token.Number(3, 0, 0)),
+                                IntegerLiteral(Token.Number(5, 0, 4)),
                             ),
-                            BooleanLiteral(Token(TokenType.False, 0, 12, "false")),
+                            BooleanLiteral(Token.False(0, 12)),
                         )
                     ),
                     "3 < 5 == true;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 11), InfixExpression(
-                            Token(TokenType.Eq, 0, 7),
+                        Token.Semicolon(0, 12), InfixExpression(
+                            Token.Eq(0, 8),
                             InfixExpression(
-                                Token(TokenType.Lt, 0, 2),
-                                IntegerLiteral(Token(TokenType.Number, 0, 0, "3")),
-                                IntegerLiteral(Token(TokenType.Number, 0, 4, "5")),
+                                Token.Lt(0, 3),
+                                IntegerLiteral(Token.Number(3, 0, 0)),
+                                IntegerLiteral(Token.Number(5, 0, 4)),
                             ),
-                            BooleanLiteral(Token(TokenType.True, 0, 11, "true")),
+                            BooleanLiteral(Token.True(0, 11)),
                         )
                     ),
                     "true == true;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 11), InfixExpression(
-                            Token(TokenType.Eq, 0, 5),
-                            BooleanLiteral(Token(TokenType.True, 0, 0, "true")),
-                            BooleanLiteral(Token(TokenType.True, 0, 10, "true")),
+                        Token.Semicolon(0, 12), InfixExpression(
+                            Token.Eq(0, 6),
+                            BooleanLiteral(Token.True(0, 0)),
+                            BooleanLiteral(Token.True(0, 11)),
                         )
                     ),
                     "false == false;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 13), InfixExpression(
-                            Token(TokenType.Eq, 0, 6),
-                            BooleanLiteral(Token(TokenType.False, 0, 0, "false")),
-                            BooleanLiteral(Token(TokenType.False, 0, 12, "false")),
+                        Token.Semicolon(0, 13), InfixExpression(
+                            Token.Eq(0, 7),
+                            BooleanLiteral(Token.False(0, 0)),
+                            BooleanLiteral(Token.False(0, 12)),
                         )
                     ),
                     "true != false;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 12), InfixExpression(
-                            Token(TokenType.NotEq, 0, 6),
-                            BooleanLiteral(Token(TokenType.True, 0, 0, "true")),
-                            BooleanLiteral(Token(TokenType.False, 0, 11, "false")),
+                        Token.Semicolon(0, 12), InfixExpression(
+                            Token.NotEq(0, 6),
+                            BooleanLiteral(Token.True(0, 0)),
+                            BooleanLiteral(Token.False(0, 11)),
                         )
                     ),
                 )
@@ -507,82 +506,82 @@ class ParserTest : ExpectSpec({
             context("grouped expressions") {
                 val data = listOf(
                     "1 + (2 + 3) + 4;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 13), InfixExpression(
-                            Token(TokenType.Plus, 0, 1),
+                        Token.Semicolon(0, 13), InfixExpression(
+                            Token.Plus(0, 3),
                             InfixExpression(
-                                Token(TokenType.Plus, 0, 5),
-                                IntegerLiteral(Token(TokenType.Number, 0, 0, "1")),
+                                Token.Plus(0, 1),
+                                IntegerLiteral(Token.Number(1, 0, 0)),
                                 InfixExpression(
-                                    Token(TokenType.Plus, 0, 7),
-                                    IntegerLiteral(Token(TokenType.Number, 0, 4, "2")),
-                                    IntegerLiteral(Token(TokenType.Number, 0, 8, "3")),
+                                    Token.Plus(0, 5),
+                                    IntegerLiteral(Token.Number(2, 0, 4)),
+                                    IntegerLiteral(Token.Number(3, 0, 8)),
                                 ),
                             ),
-                            IntegerLiteral(Token(TokenType.Number, 0, 12, "4")),
+                            IntegerLiteral(Token.Number(4, 0, 12)),
                         )
                     ),
                     "(5 + 5) * 2;" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 10), InfixExpression(
-                            Token(TokenType.Multiply, 0, 9),
+                        Token.Semicolon(0, 11), InfixExpression(
+                            Token.Multiply(0, 9),
                             InfixExpression(
-                                Token(TokenType.Plus, 0, 3),
-                                IntegerLiteral(Token(TokenType.Number, 0, 1, "5")),
-                                IntegerLiteral(Token(TokenType.Number, 0, 5, "5")),
+                                Token.Plus(0, 1),
+                                IntegerLiteral(Token.Number(5, 0, 1)),
+                                IntegerLiteral(Token.Number(5, 0, 5)),
                             ),
-                            IntegerLiteral(Token(TokenType.Number, 0, 9, "2")),
+                            IntegerLiteral(Token.Number(2, 0, 10)),
                         )
                     ),
                     "2 / (5 + 5);" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 10), InfixExpression(
-                            Token(TokenType.Divide, 0, 1),
-                            IntegerLiteral(Token(TokenType.Number, 0, 0, "2")),
+                        Token.Semicolon(0, 11), InfixExpression(
+                            Token.Divide(0, 9),
+                            IntegerLiteral(Token.Number(2, 0, 0)),
                             InfixExpression(
-                                Token(TokenType.Plus, 0, 5),
-                                IntegerLiteral(Token(TokenType.Number, 0, 3, "5")),
-                                IntegerLiteral(Token(TokenType.Number, 0, 7, "5")),
+                                Token.Plus(0, 5),
+                                IntegerLiteral(Token.Number(5, 0, 4)),
+                                IntegerLiteral(Token.Number(5, 0, 8)),
                             ),
                         )
                     ),
                     "-(5 + 5);" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 6), PrefixExpression(
-                            Token(TokenType.Minus, 0, 0),
+                        Token.Semicolon(0, 8), PrefixExpression(
+                            Token.Minus(0, 0),
                             InfixExpression(
-                                Token(TokenType.Plus, 0, 3),
-                                IntegerLiteral(Token(TokenType.Number, 0, 2, "5")),
-                                IntegerLiteral(Token(TokenType.Number, 0, 6, "5")),
+                                Token.Plus(0, 5),
+                                IntegerLiteral(Token.Number(5, 0, 1)),
+                                IntegerLiteral(Token.Number(5, 0, 5)),
                             ),
                         )
                     ),
                     "!(true == true);" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 14), PrefixExpression(
-                            Token(TokenType.Exclamation, 0, 0),
+                        Token.Semicolon(0, 14), PrefixExpression(
+                            Token.Exclamation(0, 0),
                             InfixExpression(
-                                Token(TokenType.Eq, 0, 7),
-                                BooleanLiteral(Token(TokenType.True, 0, 1, "true")),
-                                BooleanLiteral(Token(TokenType.True, 0, 13, "true")),
+                                Token.Eq(0, 6),
+                                BooleanLiteral(Token.True(0, 1)),
+                                BooleanLiteral(Token.True(0, 11)),
                             ),
                         )
                     ),
                     "(a + k - (b + c)) * (d + f);" to ExpressionStatement(
-                        Token(TokenType.Semicolon, 0, 25), InfixExpression(
-                            Token(TokenType.Multiply, 0, 24),
+                        Token.Semicolon(0, 26), InfixExpression(
+                            Token.Multiply(0, 24),
                             InfixExpression(
-                                Token(TokenType.Minus, 0, 5),
+                                Token.Minus(0, 5),
                                 InfixExpression(
-                                    Token(TokenType.Plus, 0, 3),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 1, "a")),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 5, "k")),
+                                    Token.Plus(0, 1),
+                                    Identifier.Id(Token.Identifier("a", 0, 1)),
+                                    Identifier.Id(Token.Identifier("k", 0, 5)),
                                 ),
                                 InfixExpression(
-                                    Token(TokenType.Plus, 0, 13),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 9, "b")),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 13, "c")),
+                                    Token.Plus(0, 13),
+                                    Identifier.Id(Token.Identifier("b", 0, 9)),
+                                    Identifier.Id(Token.Identifier("c", 0, 13)),
                                 ),
                             ),
                             InfixExpression(
-                                Token(TokenType.Plus, 0, 23),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 19, "d")),
-                                Identifier.Id(Token(TokenType.Identifier, 0, 23, "f")),
+                                Token.Plus(0, 21),
+                                Identifier.Id(Token.Identifier("d", 0, 17)),
+                                Identifier.Id(Token.Identifier("f", 0, 21)),
                             ),
                         )
                     ),
@@ -619,8 +618,8 @@ class ParserTest : ExpectSpec({
                 expect("successfully parsed true") {
                     assertEquals(
                         ExpressionStatement(
-                            Token(TokenType.Semicolon, 0, 4),
-                            BooleanLiteral(Token(TokenType.True, 0, 0))
+                            Token.Semicolon(0, 4),
+                            BooleanLiteral(Token.True(0, 0))
                         ),
                         program.statements[0]
                     )
@@ -640,8 +639,8 @@ class ParserTest : ExpectSpec({
                 expect("successfully parsed false") {
                     assertEquals(
                         ExpressionStatement(
-                            Token(TokenType.Semicolon, 0, 5),
-                            BooleanLiteral(Token(TokenType.False, 0, 0))
+                            Token.Semicolon(0, 5),
+                            BooleanLiteral(Token.False(0, 0))
                         ),
                         program.statements[0]
                     )
@@ -652,49 +651,49 @@ class ParserTest : ExpectSpec({
         context("parse if expression") {
             val data = listOf(
                 "if (x < y) { x };" to ExpressionStatement(
-                    Token(TokenType.Semicolon, 0, 15),
+                    Token.Semicolon(0, 16),
                     IfExpression(
-                        Token(TokenType.If, 0, 0),
+                        Token.If(0, 0),
                         InfixExpression(
-                            Token(TokenType.Lt, 0, 6),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 4, "x")),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 8, "y")),
+                            Token.Lt(0, 6),
+                            Identifier.Id(Token.Identifier("x", 0, 4)),
+                            Identifier.Id(Token.Identifier("y", 0, 8)),
                         ),
                         BlockStatement(
-                            Token(TokenType.LBrace, 0, 11),
+                            Token.LBrace(0, 11),
                             listOf(
                                 ExpressionStatement(
-                                    Token(TokenType.Identifier, 0, 13, "x"),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 13, "x")),
+                                    Token.Identifier("x", 0, 13),
+                                    Identifier.Id(Token.Identifier("x", 0, 13)),
                                 )
                             ),
                         ),
                     ),
                 ),
                 "if (x < y) { x } else { y };" to ExpressionStatement(
-                    Token(TokenType.Semicolon, 0, 26),
+                    Token.Semicolon(0, 27),
                     IfExpression(
-                        Token(TokenType.If, 0, 0),
+                        Token.If(0, 0),
                         InfixExpression(
-                            Token(TokenType.Lt, 0, 6),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 4, "x")),
-                            Identifier.Id(Token(TokenType.Identifier, 0, 8, "y")),
+                            Token.Lt(0, 6),
+                            Identifier.Id(Token.Identifier("x", 0, 4)),
+                            Identifier.Id(Token.Identifier("y", 0, 8)),
                         ),
                         BlockStatement(
-                            Token(TokenType.LBrace, 0, 11),
+                            Token.LBrace(0, 11),
                             listOf(
                                 ExpressionStatement(
-                                    Token(TokenType.Identifier, 0, 13, "x"),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 13, "x")),
+                                    Token.Identifier("x", 0, 13),
+                                    Identifier.Id(Token.Identifier("x", 0, 13)),
                                 )
                             ),
                         ),
                         BlockStatement(
-                            Token(TokenType.LBrace, 0, 20),
+                            Token.LBrace(0, 20),
                             listOf(
                                 ExpressionStatement(
-                                    Token(TokenType.Identifier, 0, 22, "y"),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 22, "y")),
+                                    Token.Identifier("y", 0, 27),
+                                    Identifier.Id(Token.Identifier("y", 0, 27)),
                                 )
                             ),
                         ),
@@ -721,22 +720,22 @@ class ParserTest : ExpectSpec({
         context("parse function literal") {
             val data = listOf(
                 "fn(x, y) { x + y; }" to FunctionLiteral(
-                    Token(TokenType.Function, 0, 0),
+                    Token.Function(0, 0),
                     listOf(
-                        Identifier.Id(Token(TokenType.Identifier, 0, 3, "x")),
-                        Identifier.Id(Token(TokenType.Identifier, 0, 6, "y")),
+                        Identifier.Id(Token.Identifier("x", 0, 3)),
+                        Identifier.Id(Token.Identifier("y", 0, 6)),
                     ),
                     BlockStatement(
-                        Token(TokenType.LBrace, 0, 9),
+                        Token.LBrace(0, 9),
                         listOf(
                             ExpressionStatement(
-                                Token(TokenType.Semicolon, 0, 16),
+                                Token.Semicolon(0, 17),
                                 InfixExpression(
-                                    Token(TokenType.Plus, 0, 11),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 9, "x")),
-                                    Identifier.Id(Token(TokenType.Identifier, 0, 13, "y")),
+                                    Token.Plus(0, 15),
+                                    Identifier.Id(Token.Identifier("x", 0, 11)),
+                                    Identifier.Id(Token.Identifier("y", 0, 14)),
                                 ),
-                            ),
+                            )
                         ),
                     ),
                 ),
@@ -761,19 +760,19 @@ class ParserTest : ExpectSpec({
         context("parse call expression") {
             val data = listOf(
                 "add(1, 2 * 3, 4 + 5);" to CallExpression(
-                    Token(TokenType.LParen, 0, 3),
-                    Identifier.Id(Token(TokenType.Identifier, 0, 0, "add")),
+                    Token.LParen(0, 3),
+                    Identifier.Id(Token.Identifier("add", 0, 0)),
                     listOf(
-                        IntegerLiteral(Token(TokenType.Number, 0, 4, "1")),
+                        IntegerLiteral(Token.Number(1, 0, 4)),
                         InfixExpression(
-                            Token(TokenType.Multiply, 0, 8),
-                            IntegerLiteral(Token(TokenType.Number, 0, 6, "2")),
-                            IntegerLiteral(Token(TokenType.Number, 0, 10, "3")),
+                            Token.Multiply(0, 10),
+                            IntegerLiteral(Token.Number(2, 0, 8)),
+                            IntegerLiteral(Token.Number(3, 0, 12)),
                         ),
                         InfixExpression(
-                            Token(TokenType.Plus, 0, 14),
-                            IntegerLiteral(Token(TokenType.Number, 0, 12, "4")),
-                            IntegerLiteral(Token(TokenType.Number, 0, 16, "5")),
+                            Token.Plus(0, 16),
+                            IntegerLiteral(Token.Number(4, 0, 14)),
+                            IntegerLiteral(Token.Number(5, 0, 18)),
                         ),
                     ),
                 ),

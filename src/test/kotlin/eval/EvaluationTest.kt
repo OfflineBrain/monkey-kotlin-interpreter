@@ -2,7 +2,6 @@ package eval
 
 import Lexer
 import Token
-import TokenType
 import ast.BooleanLiteral
 import ast.Parser
 import io.kotest.core.spec.style.ExpectSpec
@@ -38,8 +37,8 @@ class EvaluationTest : ExpectSpec({
 
         context("of a boolean expression") {
             val data = listOf(
-                Token(type = TokenType.True, literal = "true") to true,
-                Token(type = TokenType.False, literal = "false") to false
+                Token.True() to true,
+                Token.False() to false
             )
 
             data.forEach { (token, expected) ->

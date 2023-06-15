@@ -2,22 +2,22 @@ package ast
 
 import Lexer
 import Token
-import TokenType
+import kotlin.reflect.KClass
 
 
 typealias PrefixParseFn = () -> Expression
 typealias InfixParseFn = (Expression) -> Expression
 
 data class Parser(private val lexer: Lexer) {
-    private var currToken: Token = Token(TokenType.Illegal, 0, 0)
-    private var peekToken: Token = Token(TokenType.Illegal, 0, 0)
+    private var currToken: Token = Token.EOF(0, 0)
+    private var peekToken: Token = Token.EOF(0, 0)
 
     private val _errors = mutableListOf<Error>()
     val errors: List<Error>
         get() = _errors
 
-    private val prefixParseFns = mutableMapOf<TokenType, PrefixParseFn>()
-    private val infixParseFns = mutableMapOf<TokenType, InfixParseFn>()
+    private val prefixParseFns = mutableMapOf<KClass<out Token>, PrefixParseFn>()
+    private val infixParseFns = mutableMapOf<KClass<out Token>, InfixParseFn>()
 
     enum class Precedence(val value: Int) {
         LOWEST(0),
@@ -30,15 +30,15 @@ data class Parser(private val lexer: Lexer) {
     }
 
     private val precedences = mapOf(
-        TokenType.Eq to Precedence.EQUALS,
-        TokenType.NotEq to Precedence.EQUALS,
-        TokenType.Lt to Precedence.LESSGREATER,
-        TokenType.Gt to Precedence.LESSGREATER,
-        TokenType.Plus to Precedence.SUM,
-        TokenType.Minus to Precedence.SUM,
-        TokenType.Divide to Precedence.PRODUCT,
-        TokenType.Multiply to Precedence.PRODUCT,
-        TokenType.LParen to Precedence.CALL,
+        Token.Eq::class to Precedence.EQUALS,
+        Token.NotEq::class to Precedence.EQUALS,
+        Token.Lt::class to Precedence.LESSGREATER,
+        Token.Gt::class to Precedence.LESSGREATER,
+        Token.Plus::class to Precedence.SUM,
+        Token.Minus::class to Precedence.SUM,
+        Token.Divide::class to Precedence.PRODUCT,
+        Token.Multiply::class to Precedence.PRODUCT,
+        Token.LParen::class to Precedence.CALL,
     )
 
     sealed interface Error {
@@ -64,30 +64,30 @@ data class Parser(private val lexer: Lexer) {
         nextToken()
         nextToken()
 
-        prefixParseFns[TokenType.Identifier] = ::parseIdentifier
-        prefixParseFns[TokenType.Number] = ::parseIntegerLiteral
-        prefixParseFns[TokenType.True] = ::parseBooleanLiteral
-        prefixParseFns[TokenType.False] = ::parseBooleanLiteral
-        prefixParseFns[TokenType.Exclamation] = ::parsePrefixExpression
-        prefixParseFns[TokenType.Minus] = ::parsePrefixExpression
-        prefixParseFns[TokenType.LParen] = ::parseGroupedExpression
-        prefixParseFns[TokenType.If] = ::parseIfExpression
-        prefixParseFns[TokenType.Function] = ::parseFunctionLiteral
+        prefixParseFns[Token.Identifier::class] = ::parseIdentifier
+        prefixParseFns[Token.Number::class] = ::parseIntegerLiteral
+        prefixParseFns[Token.True::class] = ::parseBooleanLiteral
+        prefixParseFns[Token.False::class] = ::parseBooleanLiteral
+        prefixParseFns[Token.Exclamation::class] = ::parsePrefixExpression
+        prefixParseFns[Token.Minus::class] = ::parsePrefixExpression
+        prefixParseFns[Token.LParen::class] = ::parseGroupedExpression
+        prefixParseFns[Token.If::class] = ::parseIfExpression
+        prefixParseFns[Token.Function::class] = ::parseFunctionLiteral
 
-        infixParseFns[TokenType.Plus] = ::parseInfixExpression
-        infixParseFns[TokenType.Minus] = ::parseInfixExpression
-        infixParseFns[TokenType.Multiply] = ::parseInfixExpression
-        infixParseFns[TokenType.Divide] = ::parseInfixExpression
-        infixParseFns[TokenType.Eq] = ::parseInfixExpression
-        infixParseFns[TokenType.NotEq] = ::parseInfixExpression
-        infixParseFns[TokenType.Lt] = ::parseInfixExpression
-        infixParseFns[TokenType.Gt] = ::parseInfixExpression
-        infixParseFns[TokenType.LParen] = ::parseCallExpression
+        infixParseFns[Token.Plus::class] = ::parseInfixExpression
+        infixParseFns[Token.Minus::class] = ::parseInfixExpression
+        infixParseFns[Token.Multiply::class] = ::parseInfixExpression
+        infixParseFns[Token.Divide::class] = ::parseInfixExpression
+        infixParseFns[Token.Eq::class] = ::parseInfixExpression
+        infixParseFns[Token.NotEq::class] = ::parseInfixExpression
+        infixParseFns[Token.Lt::class] = ::parseInfixExpression
+        infixParseFns[Token.Gt::class] = ::parseInfixExpression
+        infixParseFns[Token.LParen::class] = ::parseCallExpression
     }
 
     fun parseProgram(): Program {
         val statements = mutableListOf<Statement>()
-        while (currToken.type !is TokenType.EOF) {
+        while (currToken !is Token.EOF) {
             statements += parseStatement()
             nextToken()
         }
@@ -99,11 +99,11 @@ data class Parser(private val lexer: Lexer) {
     }
 
     private fun peekPrecedence(): Precedence {
-        return precedences[peekToken.type] ?: Precedence.LOWEST
+        return precedences[peekToken::class] ?: Precedence.LOWEST
     }
 
     private fun currPrecedence(): Precedence {
-        return precedences[currToken.type] ?: Precedence.LOWEST
+        return precedences[currToken::class] ?: Precedence.LOWEST
     }
 
     private fun parseIdentifier(): Identifier {
@@ -124,9 +124,9 @@ data class Parser(private val lexer: Lexer) {
     }
 
     private fun parseStatement(): Statement {
-        return when (currToken.type) {
-            is TokenType.Let -> parseLetStatement()
-            is TokenType.Return -> parseReturnStatement()
+        return when (currToken) {
+            is Token.Let -> parseLetStatement()
+            is Token.Return -> parseReturnStatement()
             else -> parseExpressionStatement()
         }
     }
@@ -134,13 +134,13 @@ data class Parser(private val lexer: Lexer) {
     private fun parseLetStatement(): LetStatement {
         val letToken = currToken
 
-        val name = if (expectPeek<TokenType.Identifier>()) {
+        val name = if (expectPeek<Token.Identifier>()) {
             Identifier.Id(currToken)
         } else {
             Identifier.Invalid(currToken)
         }
 
-        expectPeek(TokenType.Assign)
+        expectPeek<Token.Assign>()
         nextToken()
 
         val expression = parseExpressionStatement()
@@ -159,7 +159,7 @@ data class Parser(private val lexer: Lexer) {
 
     private fun parseExpressionStatement(): ExpressionStatement {
         val expression = parseExpression(Precedence.LOWEST)
-        if (peekToken.type is TokenType.Semicolon) {
+        if (peekToken is Token.Semicolon) {
             nextToken()
         }
 
@@ -173,7 +173,7 @@ data class Parser(private val lexer: Lexer) {
 
         nextToken()
 
-        while (currToken.type !is TokenType.RBrace && currToken.type !is TokenType.EOF) {
+        while (currToken !is Token.RBrace && currToken !is Token.EOF) {
             statements += parseStatement()
             nextToken()
         }
@@ -182,10 +182,10 @@ data class Parser(private val lexer: Lexer) {
     }
 
     private fun parseExpression(precedence: Precedence): Expression {
-        val prefix = prefixParseFns[currToken.type]
+        val prefix = prefixParseFns[currToken::class]
         if (prefix == null) {
             _errors += Error.ParseError(
-                "no PREFIX parse function for ${currToken.type}",
+                "no PREFIX parse function for ${currToken}",
                 currToken.line,
                 currToken.position
             )
@@ -194,11 +194,11 @@ data class Parser(private val lexer: Lexer) {
 
         var leftExp = prefix()
 
-        while (peekToken.type !is TokenType.Semicolon && precedence < peekPrecedence()) {
-            val infix = infixParseFns[peekToken.type]
+        while (peekToken !is Token.Semicolon && precedence < peekPrecedence()) {
+            val infix = infixParseFns[peekToken::class]
             if (infix == null) {
                 _errors += Error.ParseError(
-                    "no INFIX parse function for ${peekToken.type}",
+                    "no INFIX parse function for ${peekToken}",
                     peekToken.line,
                     peekToken.position
                 )
@@ -231,7 +231,7 @@ data class Parser(private val lexer: Lexer) {
     private fun parseGroupedExpression(): Expression {
         nextToken()
         val exp = parseExpression(Precedence.LOWEST)
-        expectPeek(TokenType.RParen)
+        expectPeek<Token.RParen>()
 
         return exp
     }
@@ -239,22 +239,22 @@ data class Parser(private val lexer: Lexer) {
     private fun parseIfExpression(): Expression {
         val token = currToken
 
-        !expectPeek(TokenType.LParen)
+        expectPeek<Token.LParen>()
 
         nextToken()
 
         val condition = parseExpression(Precedence.LOWEST)
 
-        expectPeek(TokenType.RParen)
+        expectPeek<Token.RParen>()
 
-        expectPeek(TokenType.LBrace)
+        expectPeek<Token.LBrace>()
 
         val consequence = parseBlockStatement()
 
-        if (peekToken.type is TokenType.Else) {
+        if (peekToken is Token.Else) {
             nextToken()
 
-            !expectPeek(TokenType.LBrace)
+            !expectPeek<Token.LBrace>()
 
             val alternative = parseBlockStatement()
 
@@ -267,11 +267,11 @@ data class Parser(private val lexer: Lexer) {
     private fun parseFunctionLiteral(): Expression {
         val token = currToken
 
-        expectPeek(TokenType.LParen)
+        expectPeek<Token.LParen>()
 
         val parameters = parseFunctionParameters()
 
-        expectPeek(TokenType.LBrace)
+        expectPeek<Token.LBrace>()
 
         val body = parseBlockStatement()
 
@@ -281,7 +281,7 @@ data class Parser(private val lexer: Lexer) {
     private fun parseFunctionParameters(): List<Identifier> {
         val identifiers = mutableListOf<Identifier>()
 
-        if (peekToken.type is TokenType.RParen) {
+        if (peekToken is Token.RParen) {
             nextToken()
             return identifiers
         }
@@ -290,13 +290,13 @@ data class Parser(private val lexer: Lexer) {
 
         identifiers += parseIdentifier()
 
-        while (peekToken.type is TokenType.Comma) {
+        while (peekToken is Token.Comma) {
             nextToken()
             nextToken()
             identifiers += parseIdentifier()
         }
 
-        !expectPeek(TokenType.RParen)
+        !expectPeek<Token.RParen>()
 
         return identifiers
     }
@@ -310,7 +310,7 @@ data class Parser(private val lexer: Lexer) {
     private fun parseCallArguments(): List<Expression> {
         val arguments = mutableListOf<Expression>()
 
-        if (peekToken.type is TokenType.RParen) {
+        if (peekToken is Token.RParen) {
             nextToken()
             return arguments
         }
@@ -319,19 +319,19 @@ data class Parser(private val lexer: Lexer) {
 
         arguments += parseExpression(Precedence.LOWEST)
 
-        while (peekToken.type is TokenType.Comma) {
+        while (peekToken is Token.Comma) {
             nextToken()
             nextToken()
             arguments += parseExpression(Precedence.LOWEST)
         }
 
-        !expectPeek(TokenType.RParen)
+        !expectPeek<Token.RParen>()
 
         return arguments
     }
 
-    private inline fun <reified T : TokenType> expectPeek(type: T? = null): Boolean {
-        return if (peekToken.type is T) {
+    private inline fun <reified T : Token> expectPeek(type: T? = null): Boolean {
+        return if (peekToken is T) {
             nextToken()
             true
         } else {
