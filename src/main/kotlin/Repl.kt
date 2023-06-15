@@ -1,3 +1,4 @@
+import ast.Parser
 import java.io.BufferedReader
 import java.io.PrintWriter
 
@@ -8,11 +9,15 @@ class Repl(private val reader: BufferedReader, private val writer: PrintWriter) 
             writer.flush()
             val line = reader.readLine() ?: break
             val lexer = Lexer(line)
-            var token = lexer.nextToken()
-            while (token.type !is TokenType.EOF) {
-                writer.println(token)
-                token = lexer.nextToken()
+            val parser = Parser(lexer)
+            val program = parser.parseProgram()
+
+            if (parser.errors.isNotEmpty()) {
+                writer.println(parser.errors())
+                writer.println("\n\n")
             }
+
+            writer.println(program.render())
             writer.flush()
         }
     }
