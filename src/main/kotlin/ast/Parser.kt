@@ -149,12 +149,11 @@ data class Parser(private val lexer: Lexer) {
 
     private fun parseReturnStatement(): ReturnStatement {
         val returnToken = currToken
+        nextToken()
 
-        while (currToken.type !is TokenType.Semicolon) {
-            nextToken()
-        }
+        val expression = parseExpressionStatement()
 
-        return ReturnStatement(returnToken, Nothing)
+        return ReturnStatement(returnToken, expression.expression)
     }
 
     private fun parseExpressionStatement(): ExpressionStatement {

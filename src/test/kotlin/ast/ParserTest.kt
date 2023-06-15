@@ -46,7 +46,7 @@ class ParserTest : ExpectSpec({
                 val program = parser.parseProgram()
 
                 expect("should parse all statements") {
-                    assertEquals(3, program.statements.size, program.render())
+                    assertEquals(expected.size, program.statements.size, program.render())
                 }
 
                 expect("should not contain any errors") {
@@ -103,18 +103,21 @@ class ParserTest : ExpectSpec({
             """.trimIndent()
 
             val expected = listOf(
-                Token(TokenType.Return, 0, 0),
-                Token(TokenType.Return, 1, 0),
-                Token(TokenType.Return, 2, 0),
+                Token(TokenType.Return, 0, 0) to Token(TokenType.Number, 0, 7, "5"),
+                Token(TokenType.Return, 1, 0) to Token(TokenType.Number, 1, 7, "10"),
+                Token(TokenType.Return, 2, 0) to Token(TokenType.Number, 2, 7, "993322")
             )
 
             val lexer = Lexer(input)
             val parser = Parser(lexer)
             val program = parser.parseProgram()
 
-            expect("should parse successfully") {
-                assertEquals(3, program.statements.size)
-                assertEquals(0, parser.errors.size)
+            expect("should parse all statements") {
+                assertEquals(expected.size, program.statements.size, program.render())
+            }
+
+            expect("should not contain any errors") {
+                assertEquals(0, parser.errors.size, parser.errors())
             }
 
             expected.forEachIndexed { i, expect ->
@@ -123,7 +126,8 @@ class ParserTest : ExpectSpec({
 
                     val statement = program.statements[i] as ReturnStatement
 
-                    assertLiteral(expect, statement.token)
+                    assertLiteral(expect.first, statement.token)
+                    assertLiteral(expect.second.literal, statement.value.tokenLiteral())
                 }
             }
         }
@@ -169,9 +173,12 @@ class ParserTest : ExpectSpec({
             val parser = Parser(lexer)
             val program = parser.parseProgram()
 
-            expect("should parse successfully") {
-                assertEquals(1, program.statements.size)
-                assertEquals(0, parser.errors.size)
+            expect("should parse all statements") {
+                assertEquals(expected.size, program.statements.size, program.render())
+            }
+
+            expect("should not contain any errors") {
+                assertEquals(0, parser.errors.size, parser.errors())
             }
 
             expected.forEachIndexed { i, token ->
