@@ -29,11 +29,24 @@ data class Parser(private val lexer: Lexer) {
 //        TokenType.LParen to Precedence.CALL,
     )
 
-    data class Error(
-        val message: String,
-        val line: Int,
-        val position: Int,
-    )
+    sealed interface Error {
+        val message: String
+        val line: Int
+        val position: Int
+
+        data class UnexpectedToken(
+            override val message: String,
+            override val line: Int,
+            override val position: Int
+        ) : Error
+
+        data class ParseError(
+            override val message: String,
+            override val line: Int,
+            override val position: Int
+        ) : Error
+    }
+
 
     init {
         nextToken()
@@ -111,7 +124,7 @@ data class Parser(private val lexer: Lexer) {
 
         val name = if (expectPeek<TokenType.Identifier>()) {
             Identifier(currToken).also {
-                expectPeek<TokenType.Assign>()
+                expectPeek(TokenType.Assign)
             }
         } else {
             Identifier(Token(TokenType.Illegal, currToken.line, currToken.position))
@@ -147,7 +160,7 @@ data class Parser(private val lexer: Lexer) {
     private fun parseExpression(precedence: Precedence): Expression {
         val prefix = prefixParseFns[currToken.type]
         if (prefix == null) {
-            errors += Error(
+            errors += Error.ParseError(
                 "no PREFIX parse function for ${currToken.type}",
                 currToken.line,
                 currToken.position
@@ -160,7 +173,7 @@ data class Parser(private val lexer: Lexer) {
         while (peekToken.type !is TokenType.Semicolon && precedence < peekPrecedence()) {
             val infix = infixParseFns[peekToken.type]
             if (infix == null) {
-                errors += Error(
+                errors += Error.ParseError(
                     "no INFIX parse function for ${peekToken.type}",
                     peekToken.line,
                     peekToken.position
@@ -194,59 +207,30 @@ data class Parser(private val lexer: Lexer) {
     private fun parseGroupedExpression(): Expression {
         nextToken()
         val exp = parseExpression(Precedence.LOWEST)
-        if (!expectPeek<TokenType.RParen>()) {
-            errors += Error(
-                "expected RParen, but got ${peekToken.type}",
-                peekToken.line,
-                peekToken.position
-            )
-        }
+        expectPeek(TokenType.RParen)
+
         return exp
     }
 
     private fun parseIfExpression(): Expression {
         val token = currToken
 
-        if (!expectPeek<TokenType.LParen>()) {
-            errors += Error(
-                "expected LParen, but got ${peekToken.type}",
-                peekToken.line,
-                peekToken.position
-            )
-        }
+        !expectPeek(TokenType.LParen)
 
         nextToken()
 
         val condition = parseExpression(Precedence.LOWEST)
 
-        if (!expectPeek<TokenType.RParen>()) {
-            errors += Error(
-                "expected RParen, but got ${peekToken.type}",
-                peekToken.line,
-                peekToken.position
-            )
-        }
+        expectPeek(TokenType.RParen)
 
-        if (!expectPeek<TokenType.LBrace>()) {
-            errors += Error(
-                "expected LBrace, but got ${peekToken.type}",
-                peekToken.line,
-                peekToken.position
-            )
-        }
+        expectPeek(TokenType.LBrace)
 
         val consequence = parseBlockStatement()
 
         if (peekToken.type is TokenType.Else) {
             nextToken()
 
-            if (!expectPeek<TokenType.LBrace>()) {
-                errors += Error(
-                    "expected LBrace, but got ${peekToken.type}",
-                    peekToken.line,
-                    peekToken.position
-                )
-            }
+            !expectPeek(TokenType.LBrace)
 
             val alternative = parseBlockStatement()
 
@@ -271,13 +255,14 @@ data class Parser(private val lexer: Lexer) {
         return BlockStatement(token, statements)
     }
 
-    private inline fun <reified T : TokenType> expectPeek(): Boolean {
+
+    private inline fun <reified T : TokenType> expectPeek(type: T? = null): Boolean {
         return if (peekToken.type is T) {
             nextToken()
             true
         } else {
-            errors += Error(
-                "expected ${T::class.simpleName}, but got ${peekToken::class.simpleName}",
+            errors += Error.UnexpectedToken(
+                "expected '${type?.literal ?: T::class.simpleName}', but got '${peekToken.literal}'",
                 peekToken.line,
                 peekToken.position
             )
