@@ -1,5 +1,8 @@
 package eval
 
+import ast.BlockStatement
+import ast.Identifier
+
 typealias ObjectType = String
 
 interface Object {
@@ -12,6 +15,7 @@ const val BOOLEAN = "BOOLEAN"
 const val NULL = "NULL"
 const val RETURN_VALUE = "RETURN_VALUE"
 const val ERROR = "ERROR"
+const val FUNCTION = "FUNCTION"
 
 data class IntegerObject(val value: Int) : Object {
 
@@ -86,4 +90,20 @@ sealed class ErrorObject(val message: String) : Object {
         ErrorObject("unknown operator: ${left ?: ""} $operator $right")
 
     class UnknownIdentifier(identifier: String) : ErrorObject("unknown identifier: $identifier")
+
+    class NotAFunction(type: String) : ErrorObject("not a function: $type")
+}
+
+data class FunctionObject(
+    val parameters: List<Identifier>,
+    val body: BlockStatement,
+    val env: Environment
+) : Object {
+    override fun type(): ObjectType {
+        return FUNCTION
+    }
+
+    override fun render(): String {
+        return "fn(${parameters.joinToString(", ")}) ${body.render()}"
+    }
 }

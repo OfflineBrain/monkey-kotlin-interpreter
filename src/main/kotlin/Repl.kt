@@ -15,9 +15,6 @@ class Repl(private val reader: BufferedReader, private val writer: PrintWriter) 
             val parser = Parser(lexer)
             val program = parser.parseProgram()
 
-            writer.println(program.render())
-            writer.println("\n")
-
             if (parser.errors.isNotEmpty()) {
                 writer.println(parser.errors())
             } else {

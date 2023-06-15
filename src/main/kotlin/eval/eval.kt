@@ -5,6 +5,7 @@ package eval
 import ast.BlockStatement
 import ast.BooleanLiteral
 import ast.CallExpression
+import ast.Expression
 import ast.ExpressionStatement
 import ast.FunctionLiteral
 import ast.Identifier
@@ -26,8 +27,7 @@ tailrec fun eval(node: ast.Node, env: Environment): Object {
         is BooleanLiteral -> BooleanObject.from(node.value)
         is IntegerLiteral -> IntegerObject(node.value)
         is Identifier.Id -> evalIdentifier(node, env)
-        is Identifier.Invalid -> throw UnsupportedOperationException("Invalid identifier")
-        is FunctionLiteral -> TODO()
+        is FunctionLiteral -> FunctionObject(node.parameters, node.body, env)
         //expressions
         is IfExpression -> evalIfExpression(
             eval(node.condition, env),
@@ -50,7 +50,15 @@ tailrec fun eval(node: ast.Node, env: Environment): Object {
             if (right is ErrorObject) right else evalPrefixExpression(node.operator, right)
         }
 
-        is CallExpression -> TODO()
+        is CallExpression -> {
+            val function = eval(node.function, env)
+            if (function is ErrorObject) return function
+
+            val args = evalExpressions(node.arguments, env)
+            if (args.size == 1 && args[0] is ErrorObject) return args[0]
+
+            applyFunction(function, args)
+        }
         //statements
         is BlockStatement -> evalBlockStatement(node.statements, env)
         is ExpressionStatement -> eval(node.expression, env)
@@ -67,7 +75,8 @@ tailrec fun eval(node: ast.Node, env: Environment): Object {
             if (value is ErrorObject) value else ReturnValueObject(value)
         }
 
-        Nothing -> TODO()
+        is Identifier.Invalid -> throw UnsupportedOperationException("Invalid identifier")
+        Nothing -> throw UnsupportedOperationException("Invalid identifier")
     }
 }
 
@@ -114,6 +123,18 @@ private fun evalBlockStatement(statements: List<Statement>, env: Environment): O
 
 private fun evalIdentifier(node: Identifier.Id, env: Environment): Object {
     return env[node.tokenLiteral()] ?: ErrorObject.UnknownIdentifier(node.tokenLiteral())
+}
+
+private fun evalExpressions(expressions: List<Expression>, env: Environment): List<Object> {
+    val result = mutableListOf<Object>()
+
+    for (expr in expressions) {
+        val evaluated = eval(expr, env)
+        if (evaluated is ErrorObject) return listOf(evaluated)
+        result.add(evaluated)
+    }
+
+    return result
 }
 
 private fun evalPrefixExpression(operator: String, right: Object): Object {
@@ -181,3 +202,33 @@ private fun evalIfExpression(condition: Object, consequence: Object, alternative
         else -> NullObject
     }
 }
+
+private fun applyFunction(fn: Object, args: List<Object>): Object {
+
+    fun extendFunctionEnv(fn: FunctionObject, args: List<Object>): Environment {
+        val env = Environment(outer = fn.env)
+
+        for ((index, param) in fn.parameters.withIndex()) {
+            env[param.tokenLiteral()] = args[index]
+        }
+
+        return env
+    }
+
+    fun unwrapReturnValue(obj: Object) = when (obj) {
+        is ReturnValueObject -> obj.value
+        else -> obj
+    }
+
+
+    return when (fn) {
+        is FunctionObject -> {
+            val extendedEnv = extendFunctionEnv(fn, args)
+            val evaluated = eval(fn.body, extendedEnv)
+            unwrapReturnValue(evaluated)
+        }
+
+        else -> ErrorObject.NotAFunction(fn.type())
+    }
+}
+

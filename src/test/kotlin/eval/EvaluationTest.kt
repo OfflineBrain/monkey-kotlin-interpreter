@@ -245,5 +245,128 @@ class EvaluationTest : ExpectSpec({
                 }
             }
         }
+
+        context("of a function") {
+            val data = listOf(
+                "fn(x) { x + 2; };" to "(x + 2);",
+                "fn(x) { x; };" to "x;",
+                "fn(x, y) { x + y; };" to "(x + y);",
+                "fn(x,y,z) { x + y + z; };" to "((x + y) + z);",
+            )
+
+            data.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("[$input] to return a function [$expected] object") {
+                    val evaluated = eval(program, env)
+                    assert(evaluated is FunctionObject)
+                    assertEquals("{\n$expected\n}", (evaluated as FunctionObject).body.render(), program.render())
+                }
+            }
+        }
+
+        context("of a function application") {
+            val data = listOf(
+                "let identity = fn(x) { x; }; identity(5);" to 5,
+                "let identity = fn(x) { return x; }; identity(5);" to 5,
+                "let double = fn(x) { x * 2; }; double(5);" to 10,
+                "let add = fn(x, y) { x + y; }; add(5, 5);" to 10,
+                "let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));" to 20,
+                "fn(x) { x; }(5)" to 5,
+            )
+
+            data.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("[$input] to return an integer [$expected] object") {
+                    val evaluated = eval(program, env)
+                    assert(evaluated is IntegerObject)
+                    assertEquals(expected, (evaluated as IntegerObject).value, program.render())
+                }
+            }
+        }
+
+        context("of a closure") {
+            val data = listOf(
+                """
+                    let newAdder = fn(x) {
+                        fn(y) { x + y };
+                    };
+                    let addTwo = newAdder(2);
+                    addTwo(2);
+                """ to 4,
+                """
+                    let newAdder = fn(x) {
+                        fn(y) { x + y };
+                    };
+                    let addTwo = newAdder(2);
+                    let addThree = newAdder(3);
+                    addTwo(2) + addThree(3);
+                """ to 10,
+                """
+                    let newAdder = fn(x) {
+                        let newAdder = fn(y) { x + y };
+                        newAdder;
+                    };
+                    let addTwo = newAdder(2);
+                    let addThree = newAdder(3);
+                    addTwo(2) + addThree(3);
+                """ to 10,
+                """
+                    let newAdderOuter = fn(x) {
+                        fn(y) {
+                            let x = x;
+                            let y = y;
+                            x + y;
+                        };
+                    };
+                    let newAdderInner = newAdderOuter(2);
+                    newAdderInner(2);
+                """ to 4,
+                """
+                    let a = 1;
+                    let newAdderOuter = fn(x) {
+                        fn(y) {
+                            let x = x;
+                            let y = y;
+                            x + y + a;
+                        };
+                    };
+                    let newAdderInner = newAdderOuter(2);
+                    newAdderInner(2);
+                """ to 5,
+                """
+                    let newAdderOuter = fn(x) {
+                        let a = x;
+                        fn(y) {
+                            let b = y;
+                            fn(z) {
+                                let c = z;
+                                a + b + c;
+                            };
+                        };
+                    };
+                    let newAdderInner = newAdderOuter(2);
+                    let adder = newAdderInner(2);
+                    adder(2);
+                """ to 6,
+            )
+
+            data.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("[$input] to return an integer [$expected] object") {
+                    val evaluated = eval(program, env)
+                    assert(evaluated is IntegerObject)
+                    assertEquals(expected, (evaluated as IntegerObject).value, program.render())
+                }
+            }
+        }
     }
 })
