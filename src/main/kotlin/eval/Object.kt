@@ -21,13 +21,22 @@ data class IntegerObject(val value: Int) : Object {
     }
 }
 
-data class BooleanObject(val value: Boolean) : Object {
+sealed class BooleanObject(val value: Boolean) : Object {
     override fun type(): ObjectType {
         return BOOLEAN_OBJ
     }
 
     override fun inspect(): String {
         return value.toString()
+    }
+
+    object True : BooleanObject(true)
+    object False : BooleanObject(false)
+
+    companion object {
+        fun from(value: Boolean): BooleanObject {
+            return if (value) True else False
+        }
     }
 }
 
