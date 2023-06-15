@@ -9,6 +9,10 @@ import io.kotest.core.spec.style.ExpectSpec
 import kotlin.test.assertEquals
 
 class EvaluationTest : ExpectSpec({
+
+    val env = Environment()
+    beforeTest { env.clear() }
+
     context("an evaluation") {
         context("of an integer expression") {
             val data = listOf(
@@ -25,7 +29,7 @@ class EvaluationTest : ExpectSpec({
                 val program = parser.parseProgram()
 
                 expect("to return an integer [$expected] object") {
-                    val evaluated = eval(program)
+                    val evaluated = eval(program, env)
                     assert(evaluated is IntegerObject)
                     assert((evaluated as IntegerObject).value == expected)
                 }
@@ -40,7 +44,7 @@ class EvaluationTest : ExpectSpec({
 
             data.forEach { (token, expected) ->
                 expect("to return a boolean [$expected] object") {
-                    val evaluated = eval(BooleanLiteral(token))
+                    val evaluated = eval(BooleanLiteral(token), env)
                     assert(evaluated is BooleanObject)
                     assert((evaluated as BooleanObject).value == expected)
                 }
@@ -63,7 +67,7 @@ class EvaluationTest : ExpectSpec({
                 val program = parser.parseProgram()
 
                 expect("[$input] to return a boolean [$expected] object") {
-                    val evaluated = eval(program)
+                    val evaluated = eval(program, env)
                     assert(evaluated is BooleanObject)
                     assert((evaluated as BooleanObject).value == expected)
                 }
@@ -91,7 +95,7 @@ class EvaluationTest : ExpectSpec({
                 val program = parser.parseProgram()
 
                 expect("[$input] to return an integer [$expected] object") {
-                    val evaluated = eval(program)
+                    val evaluated = eval(program, env)
                     assert(evaluated is IntegerObject)
                     assert((evaluated as IntegerObject).value == expected)
                 }
@@ -125,7 +129,7 @@ class EvaluationTest : ExpectSpec({
                 val program = parser.parseProgram()
 
                 expect("[$input] to return a boolean [$expected] object") {
-                    val evaluated = eval(program)
+                    val evaluated = eval(program, env)
                     assert(evaluated is BooleanObject)
                     assert((evaluated as BooleanObject).value == expected)
                 }
@@ -149,7 +153,7 @@ class EvaluationTest : ExpectSpec({
                 val program = parser.parseProgram()
 
                 expect("[$input] to return an integer [$expected] object") {
-                    val evaluated = eval(program)
+                    val evaluated = eval(program, env)
                     if (expected == null) {
                         assert(evaluated is NullObject)
                     } else {
@@ -182,7 +186,7 @@ class EvaluationTest : ExpectSpec({
                 val program = parser.parseProgram()
 
                 expect("[$input] to return an integer [$expected] object") {
-                    val evaluated = eval(program)
+                    val evaluated = eval(program, env)
                     assert(evaluated is IntegerObject)
                     assertEquals(expected, (evaluated as IntegerObject).value, program.render())
                 }
@@ -205,6 +209,7 @@ class EvaluationTest : ExpectSpec({
                         return 1;
                     }
                 """ to ErrorObject.UnknownOperator("+", left = BOOLEAN, right = BOOLEAN),
+                "foobar" to ErrorObject.UnknownIdentifier("foobar"),
             )
 
             data.forEach { (input, expected) ->
@@ -213,9 +218,30 @@ class EvaluationTest : ExpectSpec({
                 val program = parser.parseProgram()
 
                 expect("[$input] to return an error object") {
-                    val evaluated = eval(program)
+                    val evaluated = eval(program, env)
                     assert(evaluated is ErrorObject)
                     assertEquals(expected.message, (evaluated as ErrorObject).message, program.render())
+                }
+            }
+        }
+
+        context("of a let statement") {
+            val data = listOf(
+                "let a = 5; a;" to 5,
+                "let a = 5 * 5; a;" to 25,
+                "let a = 5; let b = a; b;" to 5,
+                "let a = 5; let b = a; let c = a + b + 5; c;" to 15
+            )
+
+            data.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("[$input] to return an integer [$expected] object") {
+                    val evaluated = eval(program, env)
+                    assert(evaluated is IntegerObject)
+                    assertEquals(expected, (evaluated as IntegerObject).value, program.render())
                 }
             }
         }

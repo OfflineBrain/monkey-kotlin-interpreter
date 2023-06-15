@@ -85,4 +85,5 @@ sealed class ErrorObject(val message: String) : Object {
     class UnknownOperator(operator: String, left: ObjectType? = null, right: ObjectType) :
         ErrorObject("unknown operator: ${left ?: ""} $operator $right")
 
+    class UnknownIdentifier(identifier: String) : ErrorObject("unknown identifier: $identifier")
 }

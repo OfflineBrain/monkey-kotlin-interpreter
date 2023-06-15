@@ -18,45 +18,52 @@ import ast.Program
 import ast.ReturnStatement
 import ast.Statement
 
-tailrec fun eval(node: ast.Node): Object {
+tailrec fun eval(node: ast.Node, env: Environment): Object {
 
     return when (node) {
-        is Program -> evalProgram(node.statements)
+        is Program -> evalProgram(node.statements, env)
         //literals
         is BooleanLiteral -> BooleanObject.from(node.value)
         is IntegerLiteral -> IntegerObject(node.value)
-        is Identifier.Id -> TODO()
-        is Identifier.Invalid -> TODO()
+        is Identifier.Id -> evalIdentifier(node, env)
+        is Identifier.Invalid -> throw UnsupportedOperationException("Invalid identifier")
         is FunctionLiteral -> TODO()
         //expressions
         is IfExpression -> evalIfExpression(
-            eval(node.condition),
-            eval(node.consequence),
-            node.alternative?.let { eval(it) } ?: NullObject
+            eval(node.condition, env),
+            eval(node.consequence, env),
+            node.alternative?.let { eval(it, env) } ?: NullObject
         )
 
         is InfixExpression -> {
-            val left = eval(node.left)
+            val left = eval(node.left, env)
             if (left is ErrorObject) return left
 
-            val right = eval(node.right)
+            val right = eval(node.right, env)
             if (right is ErrorObject) return right
 
             evalInfixExpression(node.operator, left, right)
         }
 
         is PrefixExpression -> {
-            val right = eval(node.right)
+            val right = eval(node.right, env)
             if (right is ErrorObject) right else evalPrefixExpression(node.operator, right)
         }
 
         is CallExpression -> TODO()
         //statements
-        is BlockStatement -> evalBlockStatement(node.statements)
-        is ExpressionStatement -> eval(node.expression)
-        is LetStatement -> TODO()
+        is BlockStatement -> evalBlockStatement(node.statements, env)
+        is ExpressionStatement -> eval(node.expression, env)
+        is LetStatement -> {
+            val value = eval(node.value, env)
+            if (value is ErrorObject) return value
+
+            env[node.name.tokenLiteral()] = value
+            value
+        }
+
         is ReturnStatement -> {
-            val value = eval(node.value)
+            val value = eval(node.value, env)
             if (value is ErrorObject) value else ReturnValueObject(value)
         }
 
@@ -65,11 +72,11 @@ tailrec fun eval(node: ast.Node): Object {
 }
 
 
-private fun evalProgram(statements: List<Statement>): Object {
+private fun evalProgram(statements: List<Statement>, env: Environment): Object {
     var result: Object = NullObject
 
     for (stmt in statements) {
-        result = when (val tmp = eval(stmt)) {
+        result = when (val tmp = eval(stmt, env)) {
             is ReturnValueObject -> {
                 return tmp.value
             }
@@ -85,11 +92,11 @@ private fun evalProgram(statements: List<Statement>): Object {
     return result
 }
 
-private fun evalBlockStatement(statements: List<Statement>): Object {
+private fun evalBlockStatement(statements: List<Statement>, env: Environment): Object {
     var result: Object = NullObject
 
     for (stmt in statements) {
-        result = when (val tmp = eval(stmt)) {
+        result = when (val tmp = eval(stmt, env)) {
             is ReturnValueObject -> {
                 return tmp
             }
@@ -103,6 +110,10 @@ private fun evalBlockStatement(statements: List<Statement>): Object {
     }
 
     return result
+}
+
+private fun evalIdentifier(node: Identifier.Id, env: Environment): Object {
+    return env[node.tokenLiteral()] ?: ErrorObject.UnknownIdentifier(node.tokenLiteral())
 }
 
 private fun evalPrefixExpression(operator: String, right: Object): Object {
