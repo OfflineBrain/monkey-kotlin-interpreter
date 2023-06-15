@@ -188,5 +188,36 @@ class EvaluationTest : ExpectSpec({
                 }
             }
         }
+
+        context("error handling") {
+            val data = listOf(
+                "5 + true;" to ErrorObject.TypeMismatch(INTEGER, BOOLEAN),
+                "5 + true; 5;" to ErrorObject.TypeMismatch(INTEGER, BOOLEAN),
+                "-true" to ErrorObject.UnknownOperator("-", left = null, right = BOOLEAN),
+                "true + false;" to ErrorObject.UnknownOperator("+", left = BOOLEAN, right = BOOLEAN),
+                "5; true + false; 5" to ErrorObject.UnknownOperator("+", left = BOOLEAN, right = BOOLEAN),
+                "if (10 > 1) { true + false; }" to ErrorObject.UnknownOperator("+", left = BOOLEAN, right = BOOLEAN),
+                """
+                    if (10 > 1) {
+                        if (10 > 1) {
+                            return true + false;
+                        }
+                        return 1;
+                    }
+                """ to ErrorObject.UnknownOperator("+", left = BOOLEAN, right = BOOLEAN),
+            )
+
+            data.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("[$input] to return an error object") {
+                    val evaluated = eval(program)
+                    assert(evaluated is ErrorObject)
+                    assertEquals(expected.message, (evaluated as ErrorObject).message, program.render())
+                }
+            }
+        }
     }
 })

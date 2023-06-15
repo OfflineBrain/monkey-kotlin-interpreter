@@ -35,15 +35,31 @@ tailrec fun eval(node: ast.Node): Object {
             node.alternative?.let { eval(it) } ?: NullObject
         )
 
-        is InfixExpression -> evalInfixExpression(node.operator, eval(node.left), eval(node.right))
-        is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
+        is InfixExpression -> {
+            val left = eval(node.left)
+            if (left is ErrorObject) return left
+
+            val right = eval(node.right)
+            if (right is ErrorObject) return right
+
+            evalInfixExpression(node.operator, left, right)
+        }
+
+        is PrefixExpression -> {
+            val right = eval(node.right)
+            if (right is ErrorObject) right else evalPrefixExpression(node.operator, right)
+        }
 
         is CallExpression -> TODO()
         //statements
         is BlockStatement -> evalBlockStatement(node.statements)
         is ExpressionStatement -> eval(node.expression)
         is LetStatement -> TODO()
-        is ReturnStatement -> ReturnValueObject(eval(node.value))
+        is ReturnStatement -> {
+            val value = eval(node.value)
+            if (value is ErrorObject) value else ReturnValueObject(value)
+        }
+
         Nothing -> TODO()
     }
 }
@@ -53,9 +69,16 @@ private fun evalProgram(statements: List<Statement>): Object {
     var result: Object = NullObject
 
     for (stmt in statements) {
-        result = eval(stmt)
-        if (result is ReturnValueObject) {
-            return result.value
+        result = when (val tmp = eval(stmt)) {
+            is ReturnValueObject -> {
+                return tmp.value
+            }
+
+            is ErrorObject -> {
+                return tmp
+            }
+
+            else -> tmp
         }
     }
 
@@ -66,10 +89,16 @@ private fun evalBlockStatement(statements: List<Statement>): Object {
     var result: Object = NullObject
 
     for (stmt in statements) {
-        result = eval(stmt)
+        result = when (val tmp = eval(stmt)) {
+            is ReturnValueObject -> {
+                return tmp
+            }
 
-        if (result is ReturnValueObject) {
-            return result
+            is ErrorObject -> {
+                return tmp
+            }
+
+            else -> tmp
         }
     }
 
@@ -88,14 +117,14 @@ private fun evalPrefixExpression(operator: String, right: Object): Object {
     fun evalMinusPrefixOperatorExpression(right: Object): Object {
         return when (right) {
             is IntegerObject -> IntegerObject(-right.value)
-            else -> NullObject
+            else -> ErrorObject.UnknownOperator(operator, right = right.type())
         }
     }
 
     return when (operator) {
         "!" -> evalExclamationPrefixOperatorExpression(right)
         "-" -> evalMinusPrefixOperatorExpression(right)
-        else -> NullObject
+        else -> ErrorObject.UnknownOperator(operator, right = right.type())
     }
 }
 
@@ -111,7 +140,7 @@ private fun evalInfixExpression(operator: String, left: Object, right: Object): 
                 ">" -> BooleanObject.from(left.value > right.value)
                 "==" -> BooleanObject.from(left.value == right.value)
                 "!=" -> BooleanObject.from(left.value != right.value)
-                else -> NullObject
+                else -> ErrorObject.UnknownOperator(operator, left = left.type(), right = right.type())
             }
         }
 
@@ -119,16 +148,18 @@ private fun evalInfixExpression(operator: String, left: Object, right: Object): 
             return when (operator) {
                 "==" -> BooleanObject.from(left.value == right.value)
                 "!=" -> BooleanObject.from(left.value != right.value)
-                else -> NullObject
+                else -> ErrorObject.UnknownOperator(operator, left = left.type(), right = right.type())
             }
         }
 
-        else -> return NullObject
+        else -> return ErrorObject.TypeMismatch(left.type(), right.type())
     }
 }
 
 private fun evalIfExpression(condition: Object, consequence: Object, alternative: Object): Object {
     return when (condition) {
+        is ErrorObject -> condition
+
         is BooleanObject.True -> consequence
         is BooleanObject.False -> alternative
 
