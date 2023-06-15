@@ -119,3 +119,17 @@ data class FunctionLiteral(
         return "${token.literal}(${parameters.joinToString(", ") { it.render() }}) ${body.render()}"
     }
 }
+
+data class CallExpression(
+    val token: Token,
+    val function: Expression,
+    val arguments: List<Expression>
+) : Expression {
+    override fun tokenLiteral(): String {
+        return token.literal
+    }
+
+    override fun render(): String {
+        return "${function.render()}(${arguments.joinToString(", ") { it.render() }})"
+    }
+}

@@ -757,5 +757,42 @@ class ParserTest : ExpectSpec({
                 }
             }
         }
+
+        context("parse call expression") {
+            val data = listOf(
+                "add(1, 2 * 3, 4 + 5);" to CallExpression(
+                    Token(TokenType.LParen, 0, 3),
+                    Identifier.Id(Token(TokenType.Identifier, 0, 0, "add")),
+                    listOf(
+                        IntegerLiteral(Token(TokenType.Number, 0, 4, "1")),
+                        InfixExpression(
+                            Token(TokenType.Multiply, 0, 8),
+                            IntegerLiteral(Token(TokenType.Number, 0, 6, "2")),
+                            IntegerLiteral(Token(TokenType.Number, 0, 10, "3")),
+                        ),
+                        InfixExpression(
+                            Token(TokenType.Plus, 0, 14),
+                            IntegerLiteral(Token(TokenType.Number, 0, 12, "4")),
+                            IntegerLiteral(Token(TokenType.Number, 0, 16, "5")),
+                        ),
+                    ),
+                ),
+            )
+
+            data.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("parse $input") {
+                    assertEquals(0, parser.errors.size, parser.errors())
+                    assertEquals(
+                        expected,
+                        program.statements[0].let { it as ExpressionStatement }.expression,
+                        "expected ${expected.render()} but got ${program.statements[0].render()}"
+                    )
+                }
+            }
+        }
     }
 })

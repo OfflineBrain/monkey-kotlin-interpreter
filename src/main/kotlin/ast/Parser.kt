@@ -38,7 +38,7 @@ data class Parser(private val lexer: Lexer) {
         TokenType.Minus to Precedence.SUM,
         TokenType.Divide to Precedence.PRODUCT,
         TokenType.Multiply to Precedence.PRODUCT,
-//        TokenType.LParen to Precedence.CALL,
+        TokenType.LParen to Precedence.CALL,
     )
 
     sealed interface Error {
@@ -82,7 +82,7 @@ data class Parser(private val lexer: Lexer) {
         infixParseFns[TokenType.NotEq] = ::parseInfixExpression
         infixParseFns[TokenType.Lt] = ::parseInfixExpression
         infixParseFns[TokenType.Gt] = ::parseInfixExpression
-
+        infixParseFns[TokenType.LParen] = ::parseCallExpression
     }
 
     fun parseProgram(): Program {
@@ -299,6 +299,35 @@ data class Parser(private val lexer: Lexer) {
         !expectPeek(TokenType.RParen)
 
         return identifiers
+    }
+
+    private fun parseCallExpression(function: Expression): Expression {
+        val token = currToken
+        val arguments = parseCallArguments()
+        return CallExpression(token, function, arguments)
+    }
+
+    private fun parseCallArguments(): List<Expression> {
+        val arguments = mutableListOf<Expression>()
+
+        if (peekToken.type is TokenType.RParen) {
+            nextToken()
+            return arguments
+        }
+
+        nextToken()
+
+        arguments += parseExpression(Precedence.LOWEST)
+
+        while (peekToken.type is TokenType.Comma) {
+            nextToken()
+            nextToken()
+            arguments += parseExpression(Precedence.LOWEST)
+        }
+
+        !expectPeek(TokenType.RParen)
+
+        return arguments
     }
 
     private inline fun <reified T : TokenType> expectPeek(type: T? = null): Boolean {
