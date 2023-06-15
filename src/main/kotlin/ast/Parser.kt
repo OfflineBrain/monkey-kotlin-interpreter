@@ -72,6 +72,7 @@ data class Parser(private val lexer: Lexer) {
         prefixParseFns[TokenType.Minus] = ::parsePrefixExpression
         prefixParseFns[TokenType.LParen] = ::parseGroupedExpression
         prefixParseFns[TokenType.If] = ::parseIfExpression
+        prefixParseFns[TokenType.Function] = ::parseFunctionLiteral
 
         infixParseFns[TokenType.Plus] = ::parseInfixExpression
         infixParseFns[TokenType.Minus] = ::parseInfixExpression
@@ -261,6 +262,43 @@ data class Parser(private val lexer: Lexer) {
         }
 
         return IfExpression(token, condition, consequence, null)
+    }
+
+    private fun parseFunctionLiteral(): Expression {
+        val token = currToken
+
+        expectPeek(TokenType.LParen)
+
+        val parameters = parseFunctionParameters()
+
+        expectPeek(TokenType.LBrace)
+
+        val body = parseBlockStatement()
+
+        return FunctionLiteral(token, parameters, body)
+    }
+
+    private fun parseFunctionParameters(): List<Identifier> {
+        val identifiers = mutableListOf<Identifier>()
+
+        if (peekToken.type is TokenType.RParen) {
+            nextToken()
+            return identifiers
+        }
+
+        nextToken()
+
+        identifiers += parseIdentifier()
+
+        while (peekToken.type is TokenType.Comma) {
+            nextToken()
+            nextToken()
+            identifiers += parseIdentifier()
+        }
+
+        !expectPeek(TokenType.RParen)
+
+        return identifiers
     }
 
     private inline fun <reified T : TokenType> expectPeek(type: T? = null): Boolean {

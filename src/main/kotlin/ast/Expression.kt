@@ -105,3 +105,17 @@ data class IfExpression(
             | ${consequence.render()}$alternative""".trimMargin()
     }
 }
+
+data class FunctionLiteral(
+    val token: Token,
+    val parameters: List<Identifier>,
+    val body: BlockStatement
+) : Expression {
+    override fun tokenLiteral(): String {
+        return token.literal
+    }
+
+    override fun render(): String {
+        return "${token.literal}(${parameters.joinToString(", ") { it.render() }}) ${body.render()}"
+    }
+}
