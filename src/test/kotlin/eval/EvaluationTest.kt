@@ -6,6 +6,7 @@ import TokenType
 import ast.BooleanLiteral
 import ast.Parser
 import io.kotest.core.spec.style.ExpectSpec
+import kotlin.test.assertEquals
 
 class EvaluationTest : ExpectSpec({
     context("an evaluation") {
@@ -155,6 +156,35 @@ class EvaluationTest : ExpectSpec({
                         assert(evaluated is IntegerObject)
                         assert((evaluated as IntegerObject).value == expected)
                     }
+                }
+            }
+        }
+
+        context("of a return statement") {
+            val data = listOf(
+                "return 10;" to 10,
+                "return 10; 9;" to 10,
+                "return 2 * 5; 9;" to 10,
+                "9; return 2 * 5; 9;" to 10,
+                """
+                    if (10 > 1) {
+                        if (10 > 1) {
+                            return 10;
+                        }
+                        return 1;
+                    }
+                """ to 10
+            )
+
+            data.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("[$input] to return an integer [$expected] object") {
+                    val evaluated = eval(program)
+                    assert(evaluated is IntegerObject)
+                    assertEquals(expected, (evaluated as IntegerObject).value, program.render())
                 }
             }
         }

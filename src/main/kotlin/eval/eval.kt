@@ -21,7 +21,7 @@ import ast.Statement
 tailrec fun eval(node: ast.Node): Object {
 
     return when (node) {
-        is Program -> evalStatements(node.statements)
+        is Program -> evalProgram(node.statements)
         //literals
         is BooleanLiteral -> BooleanObject.from(node.value)
         is IntegerLiteral -> IntegerObject(node.value)
@@ -40,19 +40,40 @@ tailrec fun eval(node: ast.Node): Object {
 
         is CallExpression -> TODO()
         //statements
-        is BlockStatement -> evalStatements(node.statements)
+        is BlockStatement -> evalBlockStatement(node.statements)
         is ExpressionStatement -> eval(node.expression)
         is LetStatement -> TODO()
-        is ReturnStatement -> TODO()
+        is ReturnStatement -> ReturnValueObject(eval(node.value))
         Nothing -> TODO()
     }
 }
 
 
-private fun evalStatements(statements: List<Statement>): Object {
-    return statements.map {
-        eval(it)
-    }.last()
+private fun evalProgram(statements: List<Statement>): Object {
+    var result: Object = NullObject
+
+    for (stmt in statements) {
+        result = eval(stmt)
+        if (result is ReturnValueObject) {
+            return result.value
+        }
+    }
+
+    return result
+}
+
+private fun evalBlockStatement(statements: List<Statement>): Object {
+    var result: Object = NullObject
+
+    for (stmt in statements) {
+        result = eval(stmt)
+
+        if (result is ReturnValueObject) {
+            return result
+        }
+    }
+
+    return result
 }
 
 private fun evalPrefixExpression(operator: String, right: Object): Object {
