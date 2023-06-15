@@ -29,13 +29,18 @@ tailrec fun eval(node: ast.Node): Object {
         is Identifier.Invalid -> TODO()
         is FunctionLiteral -> TODO()
         //expressions
-        is IfExpression -> TODO()
+        is IfExpression -> evalIfExpression(
+            eval(node.condition),
+            eval(node.consequence),
+            node.alternative?.let { eval(it) } ?: NullObject
+        )
+
         is InfixExpression -> evalInfixExpression(node.operator, eval(node.left), eval(node.right))
         is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
 
         is CallExpression -> TODO()
         //statements
-        is BlockStatement -> TODO()
+        is BlockStatement -> evalStatements(node.statements)
         is ExpressionStatement -> eval(node.expression)
         is LetStatement -> TODO()
         is ReturnStatement -> TODO()
@@ -98,5 +103,18 @@ private fun evalInfixExpression(operator: String, left: Object, right: Object): 
         }
 
         else -> return NullObject
+    }
+}
+
+private fun evalIfExpression(condition: Object, consequence: Object, alternative: Object): Object {
+    return when (condition) {
+        is BooleanObject.True -> consequence
+        is BooleanObject.False -> alternative
+
+        IntegerObject.ZERO -> alternative
+        is IntegerObject -> consequence
+
+        is NullObject -> alternative
+        else -> NullObject
     }
 }

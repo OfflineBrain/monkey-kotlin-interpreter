@@ -130,5 +130,33 @@ class EvaluationTest : ExpectSpec({
                 }
             }
         }
+
+        context("of an if expression") {
+            val data = listOf(
+                "if (true) { 10 }" to 10,
+                "if (false) { 10 }" to null,
+                "if (1) { 10 }" to 10,
+                "if (1 < 2) { 10 }" to 10,
+                "if (1 > 2) { 10 }" to null,
+                "if (1 > 2) { 10 } else { 20 }" to 20,
+                "if (1 < 2) { 10 } else { 20 }" to 10
+            )
+
+            data.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("[$input] to return an integer [$expected] object") {
+                    val evaluated = eval(program)
+                    if (expected == null) {
+                        assert(evaluated is NullObject)
+                    } else {
+                        assert(evaluated is IntegerObject)
+                        assert((evaluated as IntegerObject).value == expected)
+                    }
+                }
+            }
+        }
     }
 })

@@ -19,6 +19,10 @@ data class IntegerObject(val value: Int) : Object {
     override fun render(): String {
         return value.toString()
     }
+
+    companion object {
+        val ZERO = IntegerObject(0)
+    }
 }
 
 sealed class BooleanObject(val value: Boolean) : Object {
