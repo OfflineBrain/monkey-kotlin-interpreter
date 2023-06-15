@@ -8,7 +8,7 @@ const val NULL_OBJ = "NULL"
 
 interface Object {
     fun type(): ObjectType
-    fun inspect(): String
+    fun render(): String
 }
 
 data class IntegerObject(val value: Int) : Object {
@@ -16,7 +16,7 @@ data class IntegerObject(val value: Int) : Object {
         return INTEGER_OBJ
     }
 
-    override fun inspect(): String {
+    override fun render(): String {
         return value.toString()
     }
 }
@@ -26,7 +26,7 @@ sealed class BooleanObject(val value: Boolean) : Object {
         return BOOLEAN_OBJ
     }
 
-    override fun inspect(): String {
+    override fun render(): String {
         return value.toString()
     }
 
@@ -45,7 +45,7 @@ object NullObject : Object {
         return NULL_OBJ
     }
 
-    override fun inspect(): String {
+    override fun render(): String {
         return "null"
     }
 }

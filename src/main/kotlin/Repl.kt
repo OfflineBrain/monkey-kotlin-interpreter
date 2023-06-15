@@ -1,4 +1,5 @@
 import ast.Parser
+import eval.eval
 import java.io.BufferedReader
 import java.io.PrintWriter
 
@@ -12,12 +13,15 @@ class Repl(private val reader: BufferedReader, private val writer: PrintWriter) 
             val parser = Parser(lexer)
             val program = parser.parseProgram()
 
+            writer.println(program.render())
+            writer.println("\n")
+
             if (parser.errors.isNotEmpty()) {
                 writer.println(parser.errors())
-                writer.println("\n\n")
+            } else {
+                writer.println(eval(program).render())
             }
 
-            writer.println(program.render())
             writer.flush()
         }
     }
