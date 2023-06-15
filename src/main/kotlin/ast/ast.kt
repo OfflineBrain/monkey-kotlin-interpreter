@@ -8,7 +8,7 @@ sealed interface Node {
     fun render(): String
 }
 
-interface Statement : Node
+sealed interface Statement : Node
 
 data class Program(val statements: List<Statement>) : Node {
     override fun tokenLiteral(): String {

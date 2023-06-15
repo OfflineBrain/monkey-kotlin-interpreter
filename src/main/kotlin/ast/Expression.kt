@@ -2,7 +2,7 @@ package ast
 
 import Token
 
-interface Expression : Node
+sealed interface Expression : Node
 
 object Nothing : Expression {
     override fun tokenLiteral(): String {
