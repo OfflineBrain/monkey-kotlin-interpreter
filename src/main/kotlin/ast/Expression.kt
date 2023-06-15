@@ -13,7 +13,9 @@ object Nothing : Expression {
 }
 
 
-data class Identifier(val token: Token) : Expression {
+sealed interface Identifier : Expression {
+    val token: Token
+
     override fun tokenLiteral(): String {
         return token.literal
     }
@@ -21,6 +23,9 @@ data class Identifier(val token: Token) : Expression {
     override fun render(): String {
         return token.literal
     }
+
+    data class Id(override val token: Token) : Identifier
+    data class Invalid(override val token: Token) : Identifier
 }
 
 data class IntegerLiteral(val token: Token) : Expression {

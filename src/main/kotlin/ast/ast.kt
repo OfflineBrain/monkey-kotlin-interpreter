@@ -10,17 +10,6 @@ sealed interface Node {
 
 interface Statement : Node
 
-
-enum class Precedence(val value: Int) {
-    LOWEST(0),
-    EQUALS(1),
-    LESSGREATER(2),
-    SUM(3),
-    PRODUCT(4),
-    PREFIX(5),
-    CALL(6),
-}
-
 data class Program(val statements: List<Statement>) : Node {
     override fun tokenLiteral(): String {
         return if (statements.isNotEmpty()) {
@@ -67,11 +56,11 @@ data class ReturnStatement(
 }
 
 data class ExpressionStatement(
-    val token: Token,
+    val lastToken: Token,
     val expression: Expression
 ) : Statement {
     override fun tokenLiteral(): String {
-        return token.literal
+        return lastToken.literal
     }
 
     override fun render(): String {

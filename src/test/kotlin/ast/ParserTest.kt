@@ -308,9 +308,9 @@ class ParserTest : ExpectSpec({
                             Token(TokenType.Multiply, 0, 3),
                             PrefixExpression(
                                 Token(TokenType.Minus, 0, 0),
-                                Identifier(Token(TokenType.Identifier, 0, 1, "a")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 1, "a")),
                             ),
-                            Identifier(Token(TokenType.Identifier, 0, 5, "b")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 5, "b")),
                         )
                     ),
                     "!-a;" to ExpressionStatement(
@@ -318,7 +318,7 @@ class ParserTest : ExpectSpec({
                             Token(TokenType.Exclamation, 0, 0),
                             PrefixExpression(
                                 Token(TokenType.Minus, 0, 1),
-                                Identifier(Token(TokenType.Identifier, 0, 2, "a")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 2, "a")),
                             ),
                         )
                     ),
@@ -327,10 +327,10 @@ class ParserTest : ExpectSpec({
                             Token(TokenType.Plus, 0, 3),
                             InfixExpression(
                                 Token(TokenType.Plus, 0, 1),
-                                Identifier(Token(TokenType.Identifier, 0, 0, "a")),
-                                Identifier(Token(TokenType.Identifier, 0, 2, "b")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 2, "b")),
                             ),
-                            Identifier(Token(TokenType.Identifier, 0, 6, "c")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
                         )
                     ),
                     "a + b - c;" to ExpressionStatement(
@@ -338,10 +338,10 @@ class ParserTest : ExpectSpec({
                             Token(TokenType.Minus, 0, 3),
                             InfixExpression(
                                 Token(TokenType.Plus, 0, 1),
-                                Identifier(Token(TokenType.Identifier, 0, 0, "a")),
-                                Identifier(Token(TokenType.Identifier, 0, 2, "b")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 2, "b")),
                             ),
-                            Identifier(Token(TokenType.Identifier, 0, 6, "c")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
                         )
                     ),
                     "a * b * c;" to ExpressionStatement(
@@ -349,10 +349,10 @@ class ParserTest : ExpectSpec({
                             Token(TokenType.Multiply, 0, 3),
                             InfixExpression(
                                 Token(TokenType.Multiply, 0, 1),
-                                Identifier(Token(TokenType.Identifier, 0, 0, "a")),
-                                Identifier(Token(TokenType.Identifier, 0, 2, "b")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 2, "b")),
                             ),
-                            Identifier(Token(TokenType.Identifier, 0, 6, "c")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
                         )
                     ),
                     "a * b / c;" to ExpressionStatement(
@@ -360,20 +360,20 @@ class ParserTest : ExpectSpec({
                             Token(TokenType.Divide, 0, 3),
                             InfixExpression(
                                 Token(TokenType.Multiply, 0, 1),
-                                Identifier(Token(TokenType.Identifier, 0, 0, "a")),
-                                Identifier(Token(TokenType.Identifier, 0, 2, "b")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 2, "b")),
                             ),
-                            Identifier(Token(TokenType.Identifier, 0, 6, "c")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
                         )
                     ),
                     "a + b / c;" to ExpressionStatement(
                         Token(TokenType.Semicolon, 0, 8), InfixExpression(
                             Token(TokenType.Plus, 0, 3),
-                            Identifier(Token(TokenType.Identifier, 0, 0, "a")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
                             InfixExpression(
                                 Token(TokenType.Divide, 0, 5),
-                                Identifier(Token(TokenType.Identifier, 0, 4, "b")),
-                                Identifier(Token(TokenType.Identifier, 0, 6, "c")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 4, "b")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
                             ),
                         )
                     ),
@@ -384,20 +384,20 @@ class ParserTest : ExpectSpec({
                                 Token(TokenType.Plus, 0, 3),
                                 InfixExpression(
                                     Token(TokenType.Plus, 0, 1),
-                                    Identifier(Token(TokenType.Identifier, 0, 0, "a")),
+                                    Identifier.Id(Token(TokenType.Identifier, 0, 0, "a")),
                                     InfixExpression(
                                         Token(TokenType.Multiply, 0, 5),
-                                        Identifier(Token(TokenType.Identifier, 0, 4, "b")),
-                                        Identifier(Token(TokenType.Identifier, 0, 6, "c")),
+                                        Identifier.Id(Token(TokenType.Identifier, 0, 4, "b")),
+                                        Identifier.Id(Token(TokenType.Identifier, 0, 6, "c")),
                                     ),
                                 ),
                                 InfixExpression(
                                     Token(TokenType.Divide, 0, 11),
-                                    Identifier(Token(TokenType.Identifier, 0, 10, "d")),
-                                    Identifier(Token(TokenType.Identifier, 0, 12, "e")),
+                                    Identifier.Id(Token(TokenType.Identifier, 0, 10, "d")),
+                                    Identifier.Id(Token(TokenType.Identifier, 0, 12, "e")),
                                 ),
                             ),
-                            Identifier(Token(TokenType.Identifier, 0, 18, "f")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 18, "f")),
                         )
                     ),
                     "3 + 4;" to ExpressionStatement(
@@ -559,19 +559,19 @@ class ParserTest : ExpectSpec({
                                 Token(TokenType.Minus, 0, 5),
                                 InfixExpression(
                                     Token(TokenType.Plus, 0, 3),
-                                    Identifier(Token(TokenType.Identifier, 0, 1, "a")),
-                                    Identifier(Token(TokenType.Identifier, 0, 5, "k")),
+                                    Identifier.Id(Token(TokenType.Identifier, 0, 1, "a")),
+                                    Identifier.Id(Token(TokenType.Identifier, 0, 5, "k")),
                                 ),
                                 InfixExpression(
                                     Token(TokenType.Plus, 0, 13),
-                                    Identifier(Token(TokenType.Identifier, 0, 9, "b")),
-                                    Identifier(Token(TokenType.Identifier, 0, 13, "c")),
+                                    Identifier.Id(Token(TokenType.Identifier, 0, 9, "b")),
+                                    Identifier.Id(Token(TokenType.Identifier, 0, 13, "c")),
                                 ),
                             ),
                             InfixExpression(
                                 Token(TokenType.Plus, 0, 23),
-                                Identifier(Token(TokenType.Identifier, 0, 19, "d")),
-                                Identifier(Token(TokenType.Identifier, 0, 23, "f")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 19, "d")),
+                                Identifier.Id(Token(TokenType.Identifier, 0, 23, "f")),
                             ),
                         )
                     ),
@@ -646,15 +646,15 @@ class ParserTest : ExpectSpec({
                         Token(TokenType.If, 0, 0),
                         InfixExpression(
                             Token(TokenType.Lt, 0, 6),
-                            Identifier(Token(TokenType.Identifier, 0, 4, "x")),
-                            Identifier(Token(TokenType.Identifier, 0, 8, "y")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 4, "x")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 8, "y")),
                         ),
                         BlockStatement(
                             Token(TokenType.LBrace, 0, 11),
                             listOf(
                                 ExpressionStatement(
                                     Token(TokenType.Identifier, 0, 13, "x"),
-                                    Identifier(Token(TokenType.Identifier, 0, 13, "x")),
+                                    Identifier.Id(Token(TokenType.Identifier, 0, 13, "x")),
                                 )
                             ),
                         ),
@@ -666,15 +666,15 @@ class ParserTest : ExpectSpec({
                         Token(TokenType.If, 0, 0),
                         InfixExpression(
                             Token(TokenType.Lt, 0, 6),
-                            Identifier(Token(TokenType.Identifier, 0, 4, "x")),
-                            Identifier(Token(TokenType.Identifier, 0, 8, "y")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 4, "x")),
+                            Identifier.Id(Token(TokenType.Identifier, 0, 8, "y")),
                         ),
                         BlockStatement(
                             Token(TokenType.LBrace, 0, 11),
                             listOf(
                                 ExpressionStatement(
                                     Token(TokenType.Identifier, 0, 13, "x"),
-                                    Identifier(Token(TokenType.Identifier, 0, 13, "x")),
+                                    Identifier.Id(Token(TokenType.Identifier, 0, 13, "x")),
                                 )
                             ),
                         ),
@@ -683,7 +683,7 @@ class ParserTest : ExpectSpec({
                             listOf(
                                 ExpressionStatement(
                                     Token(TokenType.Identifier, 0, 22, "y"),
-                                    Identifier(Token(TokenType.Identifier, 0, 22, "y")),
+                                    Identifier.Id(Token(TokenType.Identifier, 0, 22, "y")),
                                 )
                             ),
                         ),
