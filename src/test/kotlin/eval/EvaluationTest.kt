@@ -68,5 +68,67 @@ class EvaluationTest : ExpectSpec({
                 }
             }
         }
+
+        context("of an infix expression") {
+            val intExpressions = listOf(
+                "5 + 5 + 5 + 5 - 10" to 10,
+                "2 * 2 * 2 * 2 * 2" to 32,
+                "-50 + 100 + -50" to 0,
+                "5 * 2 + 10" to 20,
+                "5 + 2 * 10" to 25,
+                "20 + 2 * -10" to 0,
+                "50 / 2 * 2 + 10" to 60,
+                "2 * (5 + 10)" to 30,
+                "3 * 3 * 3 + 10" to 37,
+                "3 * (3 * 3) + 10" to 37,
+                "(5 + 10 * 2 + 15 / 3) * 2 + -10" to 50
+            )
+
+            intExpressions.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("[$input] to return an integer [$expected] object") {
+                    val evaluated = eval(program)
+                    assert(evaluated is IntegerObject)
+                    assert((evaluated as IntegerObject).value == expected)
+                }
+            }
+
+            val boolExpressions = listOf(
+                "true" to true,
+                "false" to false,
+                "1 < 2" to true,
+                "1 > 2" to false,
+                "1 < 1" to false,
+                "1 > 1" to false,
+                "1 == 1" to true,
+                "1 != 1" to false,
+                "1 == 2" to false,
+                "1 != 2" to true,
+                "true == true" to true,
+                "false == false" to true,
+                "true == false" to false,
+                "true != false" to true,
+                "false != true" to true,
+                "(1 < 2) == true" to true,
+                "(1 < 2) == false" to false,
+                "(1 > 2) == true" to false,
+                "(1 > 2) == false" to true
+            )
+
+            boolExpressions.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("[$input] to return a boolean [$expected] object") {
+                    val evaluated = eval(program)
+                    assert(evaluated is BooleanObject)
+                    assert((evaluated as BooleanObject).value == expected)
+                }
+            }
+        }
     }
 })

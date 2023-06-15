@@ -30,7 +30,7 @@ tailrec fun eval(node: ast.Node): Object {
         is FunctionLiteral -> TODO()
         //expressions
         is IfExpression -> TODO()
-        is InfixExpression -> TODO()
+        is InfixExpression -> evalInfixExpression(node.operator, eval(node.left), eval(node.right))
         is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
 
         is CallExpression -> TODO()
@@ -70,5 +70,33 @@ private fun evalPrefixExpression(operator: String, right: Object): Object {
         "!" -> evalExclamationPrefixOperatorExpression(right)
         "-" -> evalMinusPrefixOperatorExpression(right)
         else -> NullObject
+    }
+}
+
+private fun evalInfixExpression(operator: String, left: Object, right: Object): Object {
+    when {
+        left is IntegerObject && right is IntegerObject -> {
+            return when (operator) {
+                "+" -> IntegerObject(left.value + right.value)
+                "-" -> IntegerObject(left.value - right.value)
+                "*" -> IntegerObject(left.value * right.value)
+                "/" -> IntegerObject(left.value / right.value)
+                "<" -> BooleanObject.from(left.value < right.value)
+                ">" -> BooleanObject.from(left.value > right.value)
+                "==" -> BooleanObject.from(left.value == right.value)
+                "!=" -> BooleanObject.from(left.value != right.value)
+                else -> NullObject
+            }
+        }
+
+        left is BooleanObject && right is BooleanObject -> {
+            return when (operator) {
+                "==" -> BooleanObject.from(left.value == right.value)
+                "!=" -> BooleanObject.from(left.value != right.value)
+                else -> NullObject
+            }
+        }
+
+        else -> return NullObject
     }
 }
