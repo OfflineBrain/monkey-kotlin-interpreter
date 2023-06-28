@@ -16,6 +16,7 @@ const val NULL = "NULL"
 const val RETURN_VALUE = "RETURN_VALUE"
 const val ERROR = "ERROR"
 const val FUNCTION = "FUNCTION"
+const val STRING = "STRING"
 
 data class IntegerObject(val value: Int) : Object {
 
@@ -24,6 +25,10 @@ data class IntegerObject(val value: Int) : Object {
     }
 
     override fun render(): String {
+        return value.toString()
+    }
+
+    override fun toString(): String {
         return value.toString()
     }
 
@@ -42,6 +47,10 @@ sealed class BooleanObject(val value: Boolean) : Object {
         return value.toString()
     }
 
+    override fun toString(): String {
+        return value.toString()
+    }
+
     object True : BooleanObject(true)
     object False : BooleanObject(false)
 
@@ -50,6 +59,21 @@ sealed class BooleanObject(val value: Boolean) : Object {
             return if (value) True else False
         }
     }
+}
+
+data class StringObject(val value: String) : Object {
+    override fun type(): ObjectType {
+        return STRING
+    }
+
+    override fun render(): String {
+        return "\"$value\""
+    }
+
+    override fun toString(): String {
+        return value
+    }
+
 }
 
 
@@ -61,6 +85,11 @@ object NullObject : Object {
     override fun render(): String {
         return "null"
     }
+
+    override fun toString(): String {
+        return "null"
+    }
+
 }
 
 

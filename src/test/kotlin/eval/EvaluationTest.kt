@@ -367,5 +367,49 @@ class EvaluationTest : ExpectSpec({
                 }
             }
         }
+
+        context("of string operations") {
+            context("concatenation") {
+                val data = listOf(
+                    """"a" + "b"""" to "ab",
+                    """"a" + "b" + "c"""" to "abc",
+                    """"a" + 1""" to "a1",
+                    """"a" + 1 + "b" + 2""" to "a1b2",
+                )
+
+                data.forEach { (input, expected) ->
+                    val lexer = Lexer(input)
+                    val parser = Parser(lexer)
+                    val program = parser.parseProgram()
+
+                    expect("[$input] to return a string [$expected] object") {
+                        val evaluated = eval(program, env)
+                        assert(evaluated is StringObject)
+                        assertEquals(expected, (evaluated as StringObject).value, program.render())
+                    }
+                }
+            }
+
+            context("comparison") {
+                val data = listOf(
+                    """"a" == "a"""" to true,
+                    """"a" == "b"""" to false,
+                    """"a" != "a"""" to false,
+                    """"a" != "b"""" to true,
+                )
+
+                data.forEach { (input, expected) ->
+                    val lexer = Lexer(input)
+                    val parser = Parser(lexer)
+                    val program = parser.parseProgram()
+
+                    expect("[$input] to return a boolean [$expected] object") {
+                        val evaluated = eval(program, env)
+                        assert(evaluated is BooleanObject)
+                        assertEquals(expected, (evaluated as BooleanObject).value, program.render())
+                    }
+                }
+            }
+        }
     }
 })

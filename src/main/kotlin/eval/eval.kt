@@ -18,6 +18,7 @@ import ast.PrefixExpression
 import ast.Program
 import ast.ReturnStatement
 import ast.Statement
+import ast.StringLiteral
 import token.Symbols
 
 tailrec fun eval(node: ast.Node, env: Environment): Object {
@@ -27,6 +28,7 @@ tailrec fun eval(node: ast.Node, env: Environment): Object {
         //literals
         is BooleanLiteral -> BooleanObject.from(node.value)
         is IntegerLiteral -> IntegerObject(node.value)
+        is StringLiteral -> StringObject(node.value)
         is Identifier.Id -> evalIdentifier(node, env)
         is FunctionLiteral -> FunctionObject(node.parameters, node.body, env)
         //expressions
@@ -184,6 +186,22 @@ private fun evalInfixExpression(operator: String, left: Object, right: Object): 
             return when (operator) {
                 Symbols.EQ -> BooleanObject.from(left.value == right.value)
                 Symbols.NOT_EQ -> BooleanObject.from(left.value != right.value)
+                else -> ErrorObject.UnknownOperator(operator, left = left.type(), right = right.type())
+            }
+        }
+
+        left is StringObject && right is StringObject -> {
+            return when (operator) {
+                Symbols.PLUS -> StringObject(left.value + right.value)
+                Symbols.EQ -> BooleanObject.from(left.value == right.value)
+                Symbols.NOT_EQ -> BooleanObject.from(left.value != right.value)
+                else -> ErrorObject.UnknownOperator(operator, left = left.type(), right = right.type())
+            }
+        }
+
+        left is StringObject || right is StringObject -> {
+            return when (operator) {
+                Symbols.PLUS -> StringObject(left.toString() + right.toString())
                 else -> ErrorObject.UnknownOperator(operator, left = left.type(), right = right.type())
             }
         }
