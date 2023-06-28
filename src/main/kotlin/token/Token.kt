@@ -1,3 +1,5 @@
+package token
+
 sealed class Token(
     val literal: kotlin.String,
     open val line: Int = 0,

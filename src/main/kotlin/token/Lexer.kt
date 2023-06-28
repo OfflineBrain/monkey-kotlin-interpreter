@@ -1,12 +1,14 @@
-class Lexer(val input: String) {
-    var line = 0
-    var readLine = 0
-    var linePosition = 0
-    var readLinePosition = 0
+package token
 
-    var position = 0
-    var readPosition = 0
-    var ch = ' '
+class Lexer(private val input: String) {
+    private var line = 0
+    private var readLine = 0
+    private var linePosition = 0
+    private var readLinePosition = 0
+
+    private var position = 0
+    private var readPosition = 0
+    private var ch = ' '
 
 
     init {

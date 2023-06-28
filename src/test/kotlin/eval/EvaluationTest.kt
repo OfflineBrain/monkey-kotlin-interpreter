@@ -1,7 +1,7 @@
 package eval
 
-import Lexer
-import Token
+import token.Lexer
+import token.Token
 import ast.BooleanLiteral
 import ast.Parser
 import io.kotest.core.spec.style.ExpectSpec

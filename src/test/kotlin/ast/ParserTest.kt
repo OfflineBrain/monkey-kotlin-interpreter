@@ -1,7 +1,7 @@
 package ast
 
-import Lexer
-import Token
+import token.Lexer
+import token.Token
 import io.kotest.core.spec.style.ExpectSpec
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

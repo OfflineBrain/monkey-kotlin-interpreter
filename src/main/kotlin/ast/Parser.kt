@@ -1,7 +1,7 @@
 package ast
 
-import Lexer
-import Token
+import token.Lexer
+import token.Token
 import kotlin.reflect.KClass
 
 

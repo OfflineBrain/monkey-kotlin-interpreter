@@ -1,6 +1,6 @@
 package ast
 
-import Token
+import token.Token
 
 sealed interface Node {
     fun tokenLiteral(): String

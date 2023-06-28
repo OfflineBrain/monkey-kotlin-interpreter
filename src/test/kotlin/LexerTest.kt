@@ -1,4 +1,6 @@
 import io.kotest.core.spec.style.ExpectSpec
+import token.Lexer
+import token.Token
 import kotlin.test.assertEquals
 
 class LexerTest : ExpectSpec({
