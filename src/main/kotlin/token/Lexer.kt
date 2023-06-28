@@ -39,6 +39,7 @@ class Lexer(private val input: String) {
             ':' -> Token.Colon(line, linePosition)
             ',' -> Token.Comma(line, linePosition)
             '.' -> Token.Dot(line, linePosition)
+            '\\' -> Token.BackSlash(line, linePosition)
             '!' -> {
                 if (peekChar() == '=') {
                     readChar()
@@ -85,7 +86,7 @@ class Lexer(private val input: String) {
     }
 
     private fun readChar() {
-        ch = if (readPosition >= input.length) {
+        ch = if (readPosition >= input.length || readPosition < 0) {
             0.toChar()
         } else {
             input[readPosition]
@@ -104,7 +105,7 @@ class Lexer(private val input: String) {
     }
 
     private fun peekChar(): Char {
-        return if (readPosition >= input.length) {
+        return if (readPosition >= input.length || readPosition < 0) {
             0.toChar()
         } else {
             input[readPosition]
@@ -150,13 +151,21 @@ class Lexer(private val input: String) {
             readChar()
             return Token.String("", line, linePosition)
         }
-
         val beginPosition = readPosition
         readChar()
         while (ch != '"') {
+            if (ch == '\\') {
+                readChar()
+            }
+
             readChar()
         }
         val value = input.substring(beginPosition, position)
+            .replace("\\\"", "\"")
+            .replace("\\n", "\n")
+            .replace("\\t", "\t")
+            .replace("\\\\", "\\")
+
         return Token.String(value, line, linePosition)
     }
 

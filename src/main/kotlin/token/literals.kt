@@ -17,6 +17,7 @@ object Symbols {
     const val BANG = "!"
     const val ASTERISK = "*"
     const val SLASH = "/"
+    const val BACKSLASH = "\\"
     const val LT = "<"
     const val LTE = "<="
     const val GT = ">"

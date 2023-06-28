@@ -68,6 +68,12 @@ sealed class Token(
         override val position: Int = 0,
     ) : Token(Symbols.SLASH, line, position)
 
+
+    class BackSlash(
+        override val line: Int = 0,
+        override val position: Int = 0,
+    ) : Token(Symbols.BACKSLASH, line, position)
+
     class LParen(
         override val line: Int = 0,
         override val position: Int = 0,

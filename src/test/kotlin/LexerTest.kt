@@ -118,12 +118,16 @@ class LexerTest : ExpectSpec({
             val input = """
             "foobar"
             "foo bar"
+            "escape \""
+            "\n\t\\"
             """.trimIndent()
 
             val expect = listOf(
                 Token.String("foobar", 2, 0),
                 Token.String("foo bar", 3, 0),
-                Token.EOF(3, 9)
+                Token.String("escape \"", 4, 0),
+                Token.String("\n\t\\", 5, 0),
+                Token.EOF(5, 8)
             )
             val lexer = Lexer(input)
 
