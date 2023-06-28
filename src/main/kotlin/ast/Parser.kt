@@ -81,7 +81,9 @@ data class Parser(private val lexer: Lexer) {
         infixParseFns[Token.Eq::class] = ::parseInfixExpression
         infixParseFns[Token.NotEq::class] = ::parseInfixExpression
         infixParseFns[Token.Lt::class] = ::parseInfixExpression
+        infixParseFns[Token.Lte::class] = ::parseInfixExpression
         infixParseFns[Token.Gt::class] = ::parseInfixExpression
+        infixParseFns[Token.Gte::class] = ::parseInfixExpression
         infixParseFns[Token.LParen::class] = ::parseCallExpression
     }
 
