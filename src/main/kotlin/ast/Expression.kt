@@ -52,6 +52,18 @@ data class BooleanLiteral(val token: Token) : Expression {
     }
 }
 
+data class StringLiteral(val token: Token) : Expression {
+    val value: String = token.literal
+
+    override fun tokenLiteral(): String {
+        return token.literal
+    }
+
+    override fun render(): String {
+        return "\"${token.literal}\""
+    }
+}
+
 data class PrefixExpression(
     val token: Token,
     val right: Expression

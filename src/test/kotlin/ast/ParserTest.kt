@@ -793,5 +793,26 @@ class ParserTest : ExpectSpec({
                 }
             }
         }
+
+        context("parse string literals") {
+            val data = listOf(
+                "\"hello world\"" to StringLiteral(Token.String("hello world")),
+            )
+
+            data.forEach { (input, expected) ->
+                val lexer = Lexer(input)
+                val parser = Parser(lexer)
+                val program = parser.parseProgram()
+
+                expect("parse $input") {
+                    assertEquals(0, parser.errors.size, parser.errors())
+                    assertEquals(
+                        expected,
+                        program.statements[0].let { it as ExpressionStatement }.expression,
+                        "expected ${expected.render()} but got ${program.statements[0].render()}"
+                    )
+                }
+            }
+        }
     }
 })

@@ -78,6 +78,7 @@ tailrec fun eval(node: ast.Node, env: Environment): Object {
 
         is Identifier.Invalid -> throw UnsupportedOperationException("Invalid identifier")
         Nothing -> throw UnsupportedOperationException("Invalid identifier")
+        else -> throw UnsupportedOperationException("Unknown node type: ${node.javaClass}")
     }
 }
 

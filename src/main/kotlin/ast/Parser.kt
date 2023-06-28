@@ -73,6 +73,7 @@ data class Parser(private val lexer: Lexer) {
         prefixParseFns[Token.LParen::class] = ::parseGroupedExpression
         prefixParseFns[Token.If::class] = ::parseIfExpression
         prefixParseFns[Token.Function::class] = ::parseFunctionLiteral
+        prefixParseFns[Token.String::class] = ::parseStringLiteral
 
         infixParseFns[Token.Plus::class] = ::parseInfixExpression
         infixParseFns[Token.Minus::class] = ::parseInfixExpression
@@ -118,6 +119,10 @@ data class Parser(private val lexer: Lexer) {
 
     private fun parseBooleanLiteral(): BooleanLiteral {
         return BooleanLiteral(currToken)
+    }
+
+    private fun parseStringLiteral(): StringLiteral {
+        return StringLiteral(currToken)
     }
 
     private fun nextToken() {
