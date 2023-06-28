@@ -1,7 +1,7 @@
 package eval
 
-import ast.BlockStatement
 import ast.Identifier
+import ast.Statement
 
 typealias ObjectType = String
 
@@ -96,7 +96,7 @@ sealed class ErrorObject(val message: String) : Object {
 
 data class FunctionObject(
     val parameters: List<Identifier>,
-    val body: BlockStatement,
+    val body: Statement,
     val env: Environment
 ) : Object {
     override fun type(): ObjectType {

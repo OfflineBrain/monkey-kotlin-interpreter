@@ -88,8 +88,8 @@ data class InfixExpression(
 data class IfExpression(
     val token: Token,
     val condition: Expression,
-    val consequence: BlockStatement,
-    val alternative: BlockStatement? = null
+    val consequence: Statement,
+    val alternative: Statement? = null
 ) : Expression {
     override fun tokenLiteral(): String {
         return token.literal
@@ -109,7 +109,7 @@ data class IfExpression(
 data class FunctionLiteral(
     val token: Token,
     val parameters: List<Identifier>,
-    val body: BlockStatement
+    val body: Statement
 ) : Expression {
     override fun tokenLiteral(): String {
         return token.literal

@@ -127,6 +127,7 @@ data class Parser(private val lexer: Lexer) {
         return when (currToken) {
             is Token.Let -> parseLetStatement()
             is Token.Return -> parseReturnStatement()
+            is Token.LBrace -> parseBlockStatement()
             else -> parseExpressionStatement()
         }
     }
@@ -249,14 +250,14 @@ data class Parser(private val lexer: Lexer) {
 
         expectPeek<Token.LBrace>()
 
-        val consequence = parseBlockStatement()
+        val consequence = parseStatement()
 
         if (peekToken is Token.Else) {
             nextToken()
 
             !expectPeek<Token.LBrace>()
 
-            val alternative = parseBlockStatement()
+            val alternative = parseStatement()
 
             return IfExpression(token, condition, consequence, alternative)
         }
@@ -273,7 +274,7 @@ data class Parser(private val lexer: Lexer) {
 
         expectPeek<Token.LBrace>()
 
-        val body = parseBlockStatement()
+        val body = parseStatement()
 
         return FunctionLiteral(token, parameters, body)
     }
