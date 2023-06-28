@@ -29,8 +29,8 @@ class Lexer(private val input: String) {
 
             '+' -> Token.Plus(line, linePosition)
             '-' -> Token.Minus(line, linePosition)
-            '*' -> Token.Multiply(line, linePosition)
-            '/' -> Token.Divide(line, linePosition)
+            '*' -> Token.Asterisk(line, linePosition)
+            '/' -> Token.Slash(line, linePosition)
             '(' -> Token.LParen(line, linePosition)
             ')' -> Token.RParen(line, linePosition)
             '{' -> Token.LBrace(line, linePosition)
@@ -44,7 +44,7 @@ class Lexer(private val input: String) {
                     readChar()
                     Token.NotEq(line, linePosition - 1)
                 } else {
-                    Token.Exclamation(line, linePosition)
+                    Token.Bang(line, linePosition)
                 }
             }
 
@@ -127,15 +127,15 @@ class Lexer(private val input: String) {
         val line = line
         val position = linePosition
         return when (val identifier = readIdentifier()) {
-            "if" -> Token.If(line, position)
-            "else" -> Token.Else(line, position)
+            Keywords.IF -> Token.If(line, position)
+            Keywords.ELSE -> Token.Else(line, position)
             "for" -> Token.For(line, position)
             "while" -> Token.While(line, position)
-            "return" -> Token.Return(line, position)
-            "let" -> Token.Let(line, position)
-            "fn" -> Token.Function(line, position)
-            "true" -> Token.True(line, position)
-            "false" -> Token.False(line, position)
+            Keywords.RETURN -> Token.Return(line, position)
+            Keywords.LET -> Token.Let(line, position)
+            Keywords.FUNCTION -> Token.Function(line, position)
+            Keywords.TRUE -> Token.True(line, position)
+            Keywords.FALSE -> Token.False(line, position)
             else -> Token.Identifier(identifier, line, position)
         }
     }
@@ -157,7 +157,7 @@ class Lexer(private val input: String) {
     }
 
     private fun isLetter(ch: Char): Boolean {
-        return ch in 'a'..'z' || ch in 'A'..'Z'
+        return ch in 'a'..'z' || ch in 'A'..'Z' || ch == '_'
     }
 
     private fun isUnderscore(ch: Char) = ch == '_'

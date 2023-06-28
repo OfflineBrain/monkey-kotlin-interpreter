@@ -18,6 +18,7 @@ import ast.PrefixExpression
 import ast.Program
 import ast.ReturnStatement
 import ast.Statement
+import token.Symbols
 
 tailrec fun eval(node: ast.Node, env: Environment): Object {
 
@@ -154,8 +155,8 @@ private fun evalPrefixExpression(operator: String, right: Object): Object {
     }
 
     return when (operator) {
-        "!" -> evalExclamationPrefixOperatorExpression(right)
-        "-" -> evalMinusPrefixOperatorExpression(right)
+        Symbols.BANG -> evalExclamationPrefixOperatorExpression(right)
+        Symbols.MINUS -> evalMinusPrefixOperatorExpression(right)
         else -> ErrorObject.UnknownOperator(operator, right = right.type())
     }
 }
@@ -164,22 +165,24 @@ private fun evalInfixExpression(operator: String, left: Object, right: Object): 
     when {
         left is IntegerObject && right is IntegerObject -> {
             return when (operator) {
-                "+" -> IntegerObject(left.value + right.value)
-                "-" -> IntegerObject(left.value - right.value)
-                "*" -> IntegerObject(left.value * right.value)
-                "/" -> IntegerObject(left.value / right.value)
-                "<" -> BooleanObject.from(left.value < right.value)
-                ">" -> BooleanObject.from(left.value > right.value)
-                "==" -> BooleanObject.from(left.value == right.value)
-                "!=" -> BooleanObject.from(left.value != right.value)
+                Symbols.PLUS -> IntegerObject(left.value + right.value)
+                Symbols.MINUS -> IntegerObject(left.value - right.value)
+                Symbols.ASTERISK -> IntegerObject(left.value * right.value)
+                Symbols.SLASH -> IntegerObject(left.value / right.value)
+                Symbols.LT -> BooleanObject.from(left.value < right.value)
+                Symbols.LTE -> BooleanObject.from(left.value <= right.value)
+                Symbols.GT -> BooleanObject.from(left.value > right.value)
+                Symbols.GTE -> BooleanObject.from(left.value >= right.value)
+                Symbols.EQ -> BooleanObject.from(left.value == right.value)
+                Symbols.NOT_EQ -> BooleanObject.from(left.value != right.value)
                 else -> ErrorObject.UnknownOperator(operator, left = left.type(), right = right.type())
             }
         }
 
         left is BooleanObject && right is BooleanObject -> {
             return when (operator) {
-                "==" -> BooleanObject.from(left.value == right.value)
-                "!=" -> BooleanObject.from(left.value != right.value)
+                Symbols.EQ -> BooleanObject.from(left.value == right.value)
+                Symbols.NOT_EQ -> BooleanObject.from(left.value != right.value)
                 else -> ErrorObject.UnknownOperator(operator, left = left.type(), right = right.type())
             }
         }

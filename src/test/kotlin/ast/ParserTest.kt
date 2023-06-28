@@ -203,10 +203,10 @@ class ParserTest : ExpectSpec({
             """.trimIndent()
 
             val expected = listOf(
-                Token.Exclamation(0, 0) to Token.Number(5, 0, 1),
+                Token.Bang(0, 0) to Token.Number(5, 0, 1),
                 Token.Minus(1, 0) to Token.Number(15, 1, 1),
-                Token.Exclamation(2, 0) to Token.True(2, 1),
-                Token.Exclamation(3, 0) to Token.False(3, 1),
+                Token.Bang(2, 0) to Token.True(2, 1),
+                Token.Bang(3, 0) to Token.False(3, 1),
             )
 
             val lexer = Lexer(input)
@@ -252,12 +252,12 @@ class ParserTest : ExpectSpec({
                     ),
                     "5 * 5;" to listOf(
                         Token.Number(5, 0, 0),
-                        Token.Multiply(0, 2),
+                        Token.Asterisk(0, 2),
                         Token.Number(5, 0, 4),
                     ),
                     "5 / 5;" to listOf(
                         Token.Number(5, 0, 0),
-                        Token.Divide(0, 2),
+                        Token.Slash(0, 2),
                         Token.Number(5, 0, 4),
                     ),
                     "5 > 5;" to listOf(
@@ -315,7 +315,7 @@ class ParserTest : ExpectSpec({
                 val data = listOf(
                     "-a * b;" to ExpressionStatement(
                         Token.Semicolon(0, 4), InfixExpression(
-                            Token.Multiply(0, 3),
+                            Token.Asterisk(0, 3),
                             PrefixExpression(
                                 Token.Minus(0, 0),
                                 Identifier.Id(Token.Identifier("a", 0, 1)),
@@ -325,7 +325,7 @@ class ParserTest : ExpectSpec({
                     ),
                     "!-a;" to ExpressionStatement(
                         Token.Semicolon(0, 3), PrefixExpression(
-                            Token.Exclamation(0, 0),
+                            Token.Bang(0, 0),
                             PrefixExpression(
                                 Token.Minus(0, 1),
                                 Identifier.Id(Token.Identifier("a", 0, 2)),
@@ -356,9 +356,9 @@ class ParserTest : ExpectSpec({
                     ),
                     "a * b * c;" to ExpressionStatement(
                         Token.Semicolon(0, 8), InfixExpression(
-                            Token.Multiply(0, 3),
+                            Token.Asterisk(0, 3),
                             InfixExpression(
-                                Token.Multiply(0, 1),
+                                Token.Asterisk(0, 1),
                                 Identifier.Id(Token.Identifier("a", 0, 0)),
                                 Identifier.Id(Token.Identifier("b", 0, 2)),
                             ),
@@ -367,9 +367,9 @@ class ParserTest : ExpectSpec({
                     ),
                     "a * b / c;" to ExpressionStatement(
                         Token.Semicolon(0, 8), InfixExpression(
-                            Token.Divide(0, 3),
+                            Token.Slash(0, 3),
                             InfixExpression(
-                                Token.Multiply(0, 1),
+                                Token.Asterisk(0, 1),
                                 Identifier.Id(Token.Identifier("a", 0, 0)),
                                 Identifier.Id(Token.Identifier("b", 0, 2)),
                             ),
@@ -381,7 +381,7 @@ class ParserTest : ExpectSpec({
                             Token.Plus(0, 3),
                             Identifier.Id(Token.Identifier("a", 0, 0)),
                             InfixExpression(
-                                Token.Divide(0, 5),
+                                Token.Slash(0, 5),
                                 Identifier.Id(Token.Identifier("b", 0, 4)),
                                 Identifier.Id(Token.Identifier("c", 0, 6)),
                             ),
@@ -396,13 +396,13 @@ class ParserTest : ExpectSpec({
                                     Token.Plus(0, 1),
                                     Identifier.Id(Token.Identifier("a", 0, 0)),
                                     InfixExpression(
-                                        Token.Multiply(0, 5),
+                                        Token.Asterisk(0, 5),
                                         Identifier.Id(Token.Identifier("b", 0, 4)),
                                         Identifier.Id(Token.Identifier("c", 0, 6)),
                                     ),
                                 ),
                                 InfixExpression(
-                                    Token.Divide(0, 11),
+                                    Token.Slash(0, 11),
                                     Identifier.Id(Token.Identifier("d", 0, 10)),
                                     Identifier.Id(Token.Identifier("e", 0, 12)),
                                 ),
@@ -419,7 +419,7 @@ class ParserTest : ExpectSpec({
                     ),
                     "-5 * 5;" to ExpressionStatement(
                         Token.Semicolon(0, 5), InfixExpression(
-                            Token.Multiply(0, 3),
+                            Token.Asterisk(0, 3),
                             PrefixExpression(
                                 Token.Minus(0, 0),
                                 IntegerLiteral(Token.Number(5, 0, 1)),
@@ -522,7 +522,7 @@ class ParserTest : ExpectSpec({
                     ),
                     "(5 + 5) * 2;" to ExpressionStatement(
                         Token.Semicolon(0, 11), InfixExpression(
-                            Token.Multiply(0, 9),
+                            Token.Asterisk(0, 9),
                             InfixExpression(
                                 Token.Plus(0, 1),
                                 IntegerLiteral(Token.Number(5, 0, 1)),
@@ -533,7 +533,7 @@ class ParserTest : ExpectSpec({
                     ),
                     "2 / (5 + 5);" to ExpressionStatement(
                         Token.Semicolon(0, 11), InfixExpression(
-                            Token.Divide(0, 9),
+                            Token.Slash(0, 9),
                             IntegerLiteral(Token.Number(2, 0, 0)),
                             InfixExpression(
                                 Token.Plus(0, 5),
@@ -554,7 +554,7 @@ class ParserTest : ExpectSpec({
                     ),
                     "!(true == true);" to ExpressionStatement(
                         Token.Semicolon(0, 14), PrefixExpression(
-                            Token.Exclamation(0, 0),
+                            Token.Bang(0, 0),
                             InfixExpression(
                                 Token.Eq(0, 6),
                                 BooleanLiteral(Token.True(0, 1)),
@@ -564,7 +564,7 @@ class ParserTest : ExpectSpec({
                     ),
                     "(a + k - (b + c)) * (d + f);" to ExpressionStatement(
                         Token.Semicolon(0, 26), InfixExpression(
-                            Token.Multiply(0, 24),
+                            Token.Asterisk(0, 24),
                             InfixExpression(
                                 Token.Minus(0, 5),
                                 InfixExpression(
@@ -765,7 +765,7 @@ class ParserTest : ExpectSpec({
                     listOf(
                         IntegerLiteral(Token.Number(1, 0, 4)),
                         InfixExpression(
-                            Token.Multiply(0, 10),
+                            Token.Asterisk(0, 10),
                             IntegerLiteral(Token.Number(2, 0, 8)),
                             IntegerLiteral(Token.Number(3, 0, 12)),
                         ),

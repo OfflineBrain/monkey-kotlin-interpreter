@@ -36,8 +36,8 @@ data class Parser(private val lexer: Lexer) {
         Token.Gt::class to Precedence.LESSGREATER,
         Token.Plus::class to Precedence.SUM,
         Token.Minus::class to Precedence.SUM,
-        Token.Divide::class to Precedence.PRODUCT,
-        Token.Multiply::class to Precedence.PRODUCT,
+        Token.Slash::class to Precedence.PRODUCT,
+        Token.Asterisk::class to Precedence.PRODUCT,
         Token.LParen::class to Precedence.CALL,
     )
 
@@ -68,7 +68,7 @@ data class Parser(private val lexer: Lexer) {
         prefixParseFns[Token.Number::class] = ::parseIntegerLiteral
         prefixParseFns[Token.True::class] = ::parseBooleanLiteral
         prefixParseFns[Token.False::class] = ::parseBooleanLiteral
-        prefixParseFns[Token.Exclamation::class] = ::parsePrefixExpression
+        prefixParseFns[Token.Bang::class] = ::parsePrefixExpression
         prefixParseFns[Token.Minus::class] = ::parsePrefixExpression
         prefixParseFns[Token.LParen::class] = ::parseGroupedExpression
         prefixParseFns[Token.If::class] = ::parseIfExpression
@@ -76,8 +76,8 @@ data class Parser(private val lexer: Lexer) {
 
         infixParseFns[Token.Plus::class] = ::parseInfixExpression
         infixParseFns[Token.Minus::class] = ::parseInfixExpression
-        infixParseFns[Token.Multiply::class] = ::parseInfixExpression
-        infixParseFns[Token.Divide::class] = ::parseInfixExpression
+        infixParseFns[Token.Asterisk::class] = ::parseInfixExpression
+        infixParseFns[Token.Slash::class] = ::parseInfixExpression
         infixParseFns[Token.Eq::class] = ::parseInfixExpression
         infixParseFns[Token.NotEq::class] = ::parseInfixExpression
         infixParseFns[Token.Lt::class] = ::parseInfixExpression

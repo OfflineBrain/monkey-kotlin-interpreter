@@ -46,122 +46,122 @@ sealed class Token(
     class Assign(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("=", line, position)
+    ) : Token(Symbols.ASSIGN, line, position)
 
     class Plus(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("+", line, position)
+    ) : Token(Symbols.PLUS, line, position)
 
     class Minus(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("-", line, position)
+    ) : Token(Symbols.MINUS, line, position)
 
-    class Multiply(
+    class Asterisk(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("*", line, position)
+    ) : Token(Symbols.ASTERISK, line, position)
 
-    class Divide(
+    class Slash(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("/", line, position)
+    ) : Token(Symbols.SLASH, line, position)
 
     class LParen(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("(", line, position)
+    ) : Token(Symbols.LPAREN, line, position)
 
     class RParen(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token(")", line, position)
+    ) : Token(Symbols.RPAREN, line, position)
 
     class LBrace(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("{", line, position)
+    ) : Token(Symbols.LBRACE, line, position)
 
     class RBrace(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("}", line, position)
+    ) : Token(Symbols.RBRACE, line, position)
 
     class Semicolon(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token(";", line, position)
+    ) : Token(Symbols.SEMICOLON, line, position)
 
     class Colon(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token(":", line, position)
+    ) : Token(Symbols.COLON, line, position)
 
     class Comma(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token(",", line, position)
+    ) : Token(Symbols.COMMA, line, position)
 
     class Dot(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token(".", line, position)
+    ) : Token(Symbols.DOT, line, position)
 
-    class Exclamation(
+    class Bang(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("!", line, position)
+    ) : Token(Symbols.BANG, line, position)
 
     class Question(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("?", line, position)
+    ) : Token(Symbols.QUESTION, line, position)
 
     class Quote(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("\"", line, position)
+    ) : Token(Symbols.QUOTE, line, position)
 
     class Lt(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("<", line, position)
+    ) : Token(Symbols.LT, line, position)
 
     class Lte(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("<=", line, position)
+    ) : Token(Symbols.LTE, line, position)
 
     class Gt(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token(">", line, position)
+    ) : Token(Symbols.GT, line, position)
 
     class Gte(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token(">=", line, position)
+    ) : Token(Symbols.GTE, line, position)
 
     class Eq(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("==", line, position)
+    ) : Token(Symbols.EQ, line, position)
 
     class NotEq(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("!=", line, position)
+    ) : Token(Symbols.NOT_EQ, line, position)
 
     class If(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("if", line, position)
+    ) : Token(Keywords.IF, line, position)
 
     class Else(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("else", line, position)
+    ) : Token(Keywords.ELSE, line, position)
 
     class For(
         override val line: Int = 0,
@@ -176,27 +176,27 @@ sealed class Token(
     class Return(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("return", line, position)
+    ) : Token(Keywords.RETURN, line, position)
 
     class Let(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("let", line, position)
+    ) : Token(Keywords.LET, line, position)
 
     class Function(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("fn", line, position)
+    ) : Token(Keywords.FUNCTION, line, position)
 
     class True(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("true", line, position)
+    ) : Token(Keywords.TRUE, line, position)
 
     class False(
         override val line: Int = 0,
         override val position: Int = 0,
-    ) : Token("false", line, position)
+    ) : Token(Keywords.FALSE, line, position)
 
     class Null(
         override val line: Int = 0,
