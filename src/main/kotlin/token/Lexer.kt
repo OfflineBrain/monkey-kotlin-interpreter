@@ -67,7 +67,9 @@ class Lexer(private val input: String) {
             }
 
             '?' -> Token.Question(line, linePosition)
-            '"' -> Token.Quote(line, linePosition)
+
+            '"' -> readString()
+
             0.toChar() -> Token.EOF(line, linePosition)
             else -> {
                 when {
@@ -138,6 +140,24 @@ class Lexer(private val input: String) {
             Keywords.FALSE -> Token.False(line, position)
             else -> Token.Identifier(identifier, line, position)
         }
+    }
+
+    private fun readString(): Token {
+        val line = line
+        val linePosition = linePosition
+
+        if (peekChar() == '"') {
+            readChar()
+            return Token.String("", line, linePosition)
+        }
+
+        val beginPosition = readPosition
+        readChar()
+        while (ch != '"') {
+            readChar()
+        }
+        val value = input.substring(beginPosition, position)
+        return Token.String(value, line, linePosition)
     }
 
     private fun readNumber(): Token {

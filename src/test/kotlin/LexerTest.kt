@@ -113,5 +113,27 @@ class LexerTest : ExpectSpec({
                 }
             }
         }
+
+        context("string literals") {
+            val input = """
+            "foobar"
+            "foo bar"
+            """.trimIndent()
+
+            val expect = listOf(
+                Token.String("foobar", 2, 0),
+                Token.String("foo bar", 3, 0),
+                Token.EOF(3, 9)
+            )
+            val lexer = Lexer(input)
+
+            expect.forEachIndexed { idx, token ->
+                val tok = lexer.nextToken()
+
+                expect("token[$idx] $token") {
+                    assertEquals(token, tok, "token[$idx] [$tok] is not Assignual to expected token [$token]")
+                }
+            }
+        }
     }
 })
