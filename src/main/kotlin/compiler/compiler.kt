@@ -22,10 +22,18 @@ import eval.IntegerObject
 import eval.Object
 import token.Symbols
 
+data class EmittedInstruction(
+    val op: Opcode,
+    val position: Int
+)
+
 data class Compiler(
     val instructions: Instructions = mutableListOf(),
     val constants: MutableList<Object> = mutableListOf()
 ) {
+    var lastInstruction: EmittedInstruction? = null
+    var previousInstruction: EmittedInstruction? = null
+
     tailrec fun compile(node: Node) {
         when (node) {
             is Program -> {
@@ -44,7 +52,32 @@ data class Compiler(
             is FunctionLiteral -> TODO()
             is Identifier.Id -> TODO()
             is Identifier.Invalid -> TODO()
-            is IfExpression -> TODO()
+            is IfExpression -> {
+                compile(node.condition)
+                val jump = emit(OpJumpNotTruthy, 0)
+
+                compile(node.consequence)
+                if (isLastInstructionPop()) {
+                    removeLastPop()
+                }
+
+                if (node.alternative == null) {
+                    val afterConsequencePosition = instructions.size
+                    changeOperand(jump, afterConsequencePosition)
+                } else {
+                    val alternativeJump = emit(OpJump, 0)
+                    val afterConsequencePosition = instructions.size
+                    changeOperand(jump, afterConsequencePosition)
+
+                    compile(node.alternative)
+                    if (isLastInstructionPop()) {
+                        removeLastPop()
+                    }
+                    val afterAlternativePosition = instructions.size
+                    changeOperand(alternativeJump, afterAlternativePosition)
+                }
+            }
+
             is InfixExpression -> {
 
                 when (node.operator) {
@@ -91,7 +124,12 @@ data class Compiler(
             }
 
             is StringLiteral -> TODO()
-            is BlockStatement -> TODO()
+            is BlockStatement -> {
+                for (statement in node.statements) {
+                    compile(statement)
+                }
+            }
+
             is ExpressionStatement -> {
                 compile(node.expression)
                 emit(OpPop)
@@ -110,12 +148,46 @@ data class Compiler(
 
     fun emit(op: Opcode, vararg operands: Int): Int {
         val instruction = make(op, *operands)
-        return addInstruction(instruction)
+        val position = addInstruction(instruction)
+
+        setLastInstruction(op, position)
+
+        return position
     }
 
     fun addInstruction(instruction: Instructions): Int {
+        val position = instructions.size
         instructions += instruction
-        return instructions.size - 1
+        return position
+    }
+
+    fun setLastInstruction(op: Opcode, position: Int) {
+        previousInstruction = lastInstruction
+        lastInstruction = EmittedInstruction(op, position)
+    }
+
+    fun isLastInstructionPop(): Boolean {
+        return lastInstruction?.op == OpPop
+    }
+
+    fun removeLastPop() {
+        while (instructions.size > lastInstruction!!.position) {
+            instructions.removeLast()
+        }
+        lastInstruction = previousInstruction
+    }
+
+    fun changeOperand(opPosition: Int, operand: Int) {
+        val op = instructions[opPosition]
+        val newInstruction = make(op, operand)
+
+        replaceInstruction(opPosition, newInstruction)
+    }
+
+    fun replaceInstruction(position: Int, newInstruction: Instructions) {
+        newInstruction.forEachIndexed { index, instruction ->
+            instructions[position + index] = instruction
+        }
     }
 
     fun bytecode() = Bytecode(instructions, constants)

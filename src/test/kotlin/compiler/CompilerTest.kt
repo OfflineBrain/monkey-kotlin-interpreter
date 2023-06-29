@@ -5,6 +5,7 @@ import ast.Program
 import eval.IntegerObject
 import eval.Object
 import io.kotest.assertions.fail
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.matchers.shouldBe
 import token.Lexer
@@ -287,6 +288,65 @@ class CompilerTest : ExpectSpec({
                     val bytecode = compiler.bytecode()
                     bytecode.constants shouldBe expectedConstants
                     bytecode.instructions shouldBe concatInstructions(*expectedInstructions.toTypedArray())
+                }
+            }
+        }
+
+        context("conditionals") {
+            data class TestCase(
+                val input: String,
+                val expectedConstants: List<Object>,
+                val expectedInstructions: List<Instructions>
+            )
+
+            val tests = listOf(
+                TestCase(
+                    input = "if (true) { 10 }; 3333;",
+                    expectedConstants = listOf(10, 3333).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpTrue),
+                        make(OpJumpNotTruthy, 0x0007),
+                        make(OpConstant, 0x00),
+                        make(OpPop),
+                        make(OpConstant, 0x01),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "if (true) { 10 } else { 20 }; 3333;",
+                    expectedConstants = listOf(10, 20, 3333).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpTrue),
+                        make(OpJumpNotTruthy, 0x000a),
+                        make(OpConstant, 0x00),
+                        make(OpJump, 0x000d),
+                        make(OpConstant, 0x01),
+                        make(OpPop),
+                        make(OpConstant, 0x02),
+                        make(OpPop),
+                    ),
+                ),
+            )
+
+
+            tests.forEach { (input, expectedConstants, expectedInstructions) ->
+                context("input: \"$input\"") {
+                    val program = parse(input)
+                    val compiler = Compiler()
+                    compiler.compile(program)
+
+                    val bytecode = compiler.bytecode()
+                    expect("should compile constants") {
+                        bytecode.constants shouldBe expectedConstants
+                    }
+
+                    expect("should compile instructions") {
+                        val instructions = concatInstructions(*expectedInstructions.toTypedArray())
+
+                        withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
+                            bytecode.instructions shouldBe instructions
+                        }
+                    }
                 }
             }
         }
