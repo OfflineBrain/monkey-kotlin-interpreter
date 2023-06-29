@@ -8,6 +8,8 @@ import compiler.OpDiv
 import compiler.OpEqual
 import compiler.OpFalse
 import compiler.OpGreaterThan
+import compiler.OpJump
+import compiler.OpJumpNotTruthy
 import compiler.OpMinus
 import compiler.OpMul
 import compiler.OpNot
@@ -18,6 +20,7 @@ import compiler.OpTrue
 import compiler.readUint16
 import eval.BooleanObject
 import eval.IntegerObject
+import eval.NullObject
 import eval.Object
 
 data class Vm(
@@ -82,13 +85,7 @@ data class Vm(
 
                 OpNot -> {
                     val operand = pop()
-                    push(
-                        when (operand) {
-                            BooleanObject.True -> BooleanObject.False
-                            BooleanObject.False -> BooleanObject.True
-                            else -> TODO()
-                        }
-                    )
+                    push(toInvertedBooleanObject(operand))
                 }
 
                 OpMinus -> {
@@ -113,10 +110,31 @@ data class Vm(
                     val left = pop()
                     push(BooleanObject.from((left as IntegerObject).value > (right as IntegerObject).value))
                 }
+
+                OpJump -> {
+                    val pos = readUint16(instructions.subList(ip + 1, instructions.size))
+                    ip = pos - 1
+                }
+
+                OpJumpNotTruthy -> {
+                    val pos = readUint16(instructions.subList(ip + 1, instructions.size))
+                    ip += 2
+                    val condition = pop()
+                    if (toInvertedBooleanObject(condition).value) {
+                        ip = pos - 1
+                    }
+                }
             }
 
             ip++
         }
+    }
+
+    private fun toInvertedBooleanObject(operand: Object) = when (operand) {
+        BooleanObject.True -> BooleanObject.False
+        BooleanObject.False -> BooleanObject.True
+        NullObject -> BooleanObject.True
+        else -> BooleanObject.False
     }
 
     fun stackTop(): Object {
