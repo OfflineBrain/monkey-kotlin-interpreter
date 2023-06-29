@@ -29,7 +29,8 @@ data class EmittedInstruction(
 
 data class Compiler(
     val instructions: Instructions = mutableListOf(),
-    val constants: MutableList<Object> = mutableListOf()
+    val constants: MutableList<Object> = mutableListOf(),
+    val symbolTable: SymbolTable = SymbolTable(),
 ) {
     var lastInstruction: EmittedInstruction? = null
     var previousInstruction: EmittedInstruction? = null
@@ -137,6 +138,8 @@ data class Compiler(
 
             is LetStatement -> {
                 compile(node.value)
+                val symbol = symbolTable.define(node.name.token.literal)
+                emit(OpSetGlobal, symbol.index)
             }
 
             is ReturnStatement -> TODO()
