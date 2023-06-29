@@ -4,9 +4,11 @@ import token.Lexer
 import token.Token
 import ast.BooleanLiteral
 import ast.Parser
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
 import kotlin.test.assertEquals
 
+@DisplayName("Evaluation")
 class EvaluationTest : ExpectSpec({
 
     val env = Environment()

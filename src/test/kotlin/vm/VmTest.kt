@@ -6,10 +6,12 @@ import compiler.Compiler
 import eval.BooleanObject
 import eval.IntegerObject
 import eval.NullObject
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.matchers.shouldBe
 import token.Lexer
 
+@DisplayName("Virtual Machine")
 class VmTest : ExpectSpec({
     context("a vm") {
 

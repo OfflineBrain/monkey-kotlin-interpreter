@@ -1,8 +1,10 @@
 package compiler
 
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.matchers.shouldBe
 
+@DisplayName("Opcode")
 class CodeTest : ExpectSpec({
 
     context("a make") {

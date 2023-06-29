@@ -6,10 +6,12 @@ import eval.IntegerObject
 import eval.Object
 import io.kotest.assertions.fail
 import io.kotest.assertions.withClue
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.matchers.shouldBe
 import token.Lexer
 
+@DisplayName("Compiler")
 class CompilerTest : ExpectSpec({
 
     context("a compiler") {

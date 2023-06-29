@@ -1,5 +1,6 @@
 package ast
 
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
 import token.Lexer
 import token.Token
@@ -7,6 +8,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 
+@DisplayName("Parser")
 class ParserTest : ExpectSpec({
 
     fun assertLiteral(expected: Token, actual: Token) {
