@@ -145,5 +145,27 @@ class VmTest : ExpectSpec({
                 }
             }
         }
+
+        context("global let statement") {
+            val data = listOf(
+                "let one = 1; one" to 1,
+                "let one = 1; let two = 2; one + two" to 3,
+                "let one = 1; let two = one + one; one + two" to 3,
+            )
+
+            data.forEach { (input, expected) ->
+                val program = parse(input)
+                val compiler = Compiler()
+                compiler.compile(program)
+                val vm = Vm(compiler.bytecode())
+                vm.run()
+                val stackTop = vm.lastPoppedStackElem()
+                val result = stackTop as IntegerObject
+
+                expect("should return $expected for \"$input\"") {
+                    result.value shouldBe expected
+                }
+            }
+        }
     }
 })

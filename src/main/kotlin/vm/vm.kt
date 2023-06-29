@@ -7,6 +7,7 @@ import compiler.OpConstant
 import compiler.OpDiv
 import compiler.OpEqual
 import compiler.OpFalse
+import compiler.OpGetGlobal
 import compiler.OpGreaterThan
 import compiler.OpJump
 import compiler.OpJumpNotTruthy
@@ -16,6 +17,7 @@ import compiler.OpNot
 import compiler.OpNotEqual
 import compiler.OpNull
 import compiler.OpPop
+import compiler.OpSetGlobal
 import compiler.OpSub
 import compiler.OpTrue
 import compiler.readUint16
@@ -24,13 +26,16 @@ import eval.IntegerObject
 import eval.NullObject
 import eval.Object
 
+const val GlobalSize = 65536
+
 data class Vm(
     val instructions: Instructions = mutableListOf(),
-    val constants: MutableList<Object> = mutableListOf()
+    val constants: MutableList<Object> = mutableListOf(),
+    val globals: MutableList<Object> = MutableList(GlobalSize) { NullObject },
 ) {
     constructor(bytecode: Bytecode) : this(bytecode.instructions, bytecode.constants.toMutableList())
 
-    private val stack: MutableList<Object> = ArrayList(2048)
+    private val stack: MutableList<Object> = MutableList(2048) { NullObject }
     private var sp = 0
 
     fun run() {
@@ -124,6 +129,18 @@ data class Vm(
                     if (toInvertedBooleanObject(condition).value) {
                         ip = pos - 1
                     }
+                }
+
+                OpSetGlobal -> {
+                    val globalIndex = readUint16(instructions.subList(ip + 1, instructions.size))
+                    ip += 2
+                    globals[globalIndex] = pop()
+                }
+
+                OpGetGlobal -> {
+                    val globalIndex = readUint16(instructions.subList(ip + 1, instructions.size))
+                    ip += 2
+                    push(globals[globalIndex])
                 }
 
                 OpNull -> {
