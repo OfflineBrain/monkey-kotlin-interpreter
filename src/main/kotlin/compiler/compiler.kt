@@ -51,7 +51,13 @@ data class Compiler(
 
             is CallExpression -> TODO()
             is FunctionLiteral -> TODO()
-            is Identifier.Id -> TODO()
+            is Identifier.Id -> {
+                val symbol = symbolTable.resolve(node.token.literal)
+                if (symbol != null) {
+                    emit(OpGetGlobal, symbol.index)
+                }
+            }
+
             is Identifier.Invalid -> TODO()
             is IfExpression -> {
                 compile(node.condition)
