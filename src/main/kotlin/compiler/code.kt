@@ -5,12 +5,21 @@ typealias Opcode = UByte
 
 const val OpConstant: Opcode = 0x00u
 const val OpAdd: Opcode = 0x01u
+const val OpSub: Opcode = 0x02u
+const val OpMul: Opcode = 0x03u
+const val OpDiv: Opcode = 0x04u
+const val OpPop: Opcode = 0x05u
+
 
 data class Definition(val name: String, val operandWidths: List<Int>)
 
 val definitions = mapOf(
     OpConstant to Definition("OpConstant", listOf(2)),
     OpAdd to Definition("OpAdd", listOf()),
+    OpSub to Definition("OpSub", listOf()),
+    OpMul to Definition("OpMul", listOf()),
+    OpDiv to Definition("OpDiv", listOf()),
+    OpPop to Definition("OpPop", listOf()),
 )
 
 fun lookupDefinition(opcode: Opcode): Definition? {
@@ -44,7 +53,7 @@ fun readOperands(def: Definition, instructions: Instructions): Pair<List<Int>, I
     val operands = mutableListOf<Int>()
     var offset = 0
 
-    def.operandWidths.forEachIndexed { i, width ->
+    def.operandWidths.forEach { width ->
         when (width) {
             2 -> {
                 operands.add(readUint16(instructions.subList(offset, offset + width)))

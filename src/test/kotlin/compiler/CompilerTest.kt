@@ -84,8 +84,49 @@ class CompilerTest : ExpectSpec({
                         make(OpConstant, 0x00),
                         make(OpConstant, 0x01),
                         make(OpAdd),
+                        make(OpPop),
                     ),
                 ),
+                TestCase(
+                    input = "1 - 2",
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpSub),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "1 * 2",
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpMul),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "1 / 2",
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpDiv),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "1; 2",
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpPop),
+                        make(OpConstant, 0x01),
+                        make(OpPop),
+                    ),
+                )
             )
 
             tests.forEach { (input, expectedConstants, expectedInstructions) ->

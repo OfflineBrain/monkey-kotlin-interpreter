@@ -44,9 +44,9 @@ data class Compiler(
 
                 when (node.operator) {
                     Symbols.PLUS -> emit(OpAdd)
-//                    Symbols.MINUS -> emit(OpSub)
-//                    Symbols.ASTERISK -> emit(OpMul)
-//                    Symbols.SLASH -> emit(OpDiv)
+                    Symbols.MINUS -> emit(OpSub)
+                    Symbols.ASTERISK -> emit(OpMul)
+                    Symbols.SLASH -> emit(OpDiv)
 //                    Symbols.EQ -> emit(OpEqual)
 //                    Symbols.NOT_EQ -> emit(OpNotEqual)
 //                    Symbols.LT -> emit(OpGreaterThan)
@@ -65,6 +65,7 @@ data class Compiler(
             is BlockStatement -> TODO()
             is ExpressionStatement -> {
                 compile(node.expression)
+                emit(OpPop)
             }
 
             is LetStatement -> TODO()

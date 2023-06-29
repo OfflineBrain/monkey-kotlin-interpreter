@@ -22,6 +22,10 @@ class VmTest : ExpectSpec({
                 "1" to 1,
                 "2" to 2,
                 "1 + 2" to 3,
+                "3 - 3" to 0,
+                "2 - 4" to -2,
+                "2 * 3" to 6,
+                "4 / 2" to 2,
             )
 
             data.forEach {
