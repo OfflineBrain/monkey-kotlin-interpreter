@@ -15,6 +15,7 @@ const val OpEqual: Opcode = 0x08u
 const val OpNotEqual: Opcode = 0x09u
 const val OpGreaterThan: Opcode = 0x0au
 const val OpNot: Opcode = 0x0bu
+const val OpMinus: Opcode = 0x0cu
 
 
 data class Definition(val name: String, val operandWidths: List<Int>)
@@ -32,6 +33,7 @@ val definitions = mapOf(
     OpNotEqual to Definition("OpNotEqual", listOf()),
     OpGreaterThan to Definition("OpGreaterThan", listOf()),
     OpNot to Definition("OpNot", listOf()),
+    OpMinus to Definition("OpMinus", listOf()),
 )
 
 fun lookupDefinition(opcode: Opcode): Definition? {

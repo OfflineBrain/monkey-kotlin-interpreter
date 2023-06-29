@@ -126,7 +126,16 @@ class CompilerTest : ExpectSpec({
                         make(OpConstant, 0x01),
                         make(OpPop),
                     ),
-                )
+                ),
+                TestCase(
+                    input = "-1",
+                    expectedConstants = listOf(1).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpMinus),
+                        make(OpPop),
+                    ),
+                ),
             )
 
             tests.forEach { (input, expectedConstants, expectedInstructions) ->
@@ -229,7 +238,7 @@ class CompilerTest : ExpectSpec({
                 ),
                 TestCase(
                     input = "1 >= 2",
-                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
+                    expectedConstants = listOf(2, 1).map { IntegerObject(it) },
                     expectedInstructions = listOf(
                         make(OpConstant, 0x00),
                         make(OpConstant, 0x01),
@@ -240,11 +249,29 @@ class CompilerTest : ExpectSpec({
                 ),
                 TestCase(
                     input = "1 <= 2",
-                    expectedConstants = listOf(2, 1).map { IntegerObject(it) },
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
                     expectedInstructions = listOf(
                         make(OpConstant, 0x00),
                         make(OpConstant, 0x01),
                         make(OpGreaterThan),
+                        make(OpNot),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "!true",
+                    expectedConstants = emptyList(),
+                    expectedInstructions = listOf(
+                        make(OpTrue),
+                        make(OpNot),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "!false",
+                    expectedConstants = emptyList(),
+                    expectedInstructions = listOf(
+                        make(OpFalse),
                         make(OpNot),
                         make(OpPop),
                     ),

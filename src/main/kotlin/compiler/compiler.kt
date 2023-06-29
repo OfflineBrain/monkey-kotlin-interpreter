@@ -81,7 +81,15 @@ data class Compiler(
                 emit(OpConstant, addConstant(integer))
             }
 
-            is PrefixExpression -> TODO()
+            is PrefixExpression -> {
+                compile(node.right)
+                when (node.operator) {
+                    Symbols.BANG -> emit(OpNot)
+                    Symbols.MINUS -> emit(OpMinus)
+                    else -> TODO()
+                }
+            }
+
             is StringLiteral -> TODO()
             is BlockStatement -> TODO()
             is ExpressionStatement -> {
