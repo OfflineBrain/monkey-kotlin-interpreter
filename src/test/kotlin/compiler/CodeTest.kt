@@ -6,12 +6,29 @@ import io.kotest.matchers.shouldBe
 class CodeTest : ExpectSpec({
 
     context("a make") {
-        val op = OpConstant
-        val operands = listOf(65534)
-        val expect = listOf<UByte>(0x00u, 0xffu, 0xfeu)
+        data class TestCase(
+            val op: Opcode,
+            val operands: List<Int>,
+            val expect: Instructions,
+        )
 
-        expect("should return correct instructions") {
-            make(op, *operands.toIntArray()) shouldBe expect
+        val tests = listOf(
+            TestCase(
+                op = OpConstant,
+                operands = listOf(65534),
+                expect = mutableListOf(OpConstant, 0xffu, 0xfeu),
+            ),
+            TestCase(
+                op = OpAdd,
+                operands = emptyList(),
+                expect = mutableListOf(OpAdd),
+            )
+        )
+
+        tests.forEach { (op, operands, expect) ->
+            expect("should return correct instructions Op[$op] Operands[$operands] Expect[${expect.string()}]") {
+                make(op, *operands.toIntArray()) shouldBe expect
+            }
         }
     }
 })
