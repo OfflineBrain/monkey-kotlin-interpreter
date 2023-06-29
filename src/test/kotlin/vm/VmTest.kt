@@ -33,6 +33,8 @@ class VmTest : ExpectSpec({
                 "2 * 2 * 2 * 2" to 16,
                 "5 * 2 + 10" to 20,
                 "5 + 5 + 5 + 5 * 2" to 25,
+                "-5" to -5,
+                "-(-5)" to 5,
             )
 
             data.forEach {
@@ -72,6 +74,8 @@ class VmTest : ExpectSpec({
                 "false == false" to true,
                 "true == false" to false,
                 "true != false" to true,
+                "!true" to false,
+                "!false" to true,
             )
 
             data.forEach { (input, expected) ->

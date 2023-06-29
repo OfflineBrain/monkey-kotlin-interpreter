@@ -8,6 +8,7 @@ import compiler.OpDiv
 import compiler.OpEqual
 import compiler.OpFalse
 import compiler.OpGreaterThan
+import compiler.OpMinus
 import compiler.OpMul
 import compiler.OpNot
 import compiler.OpNotEqual
@@ -88,6 +89,11 @@ data class Vm(
                             else -> TODO()
                         }
                     )
+                }
+
+                OpMinus -> {
+                    val operand = pop()
+                    push(IntegerObject(-(operand as IntegerObject).value))
                 }
 
                 OpEqual -> {
