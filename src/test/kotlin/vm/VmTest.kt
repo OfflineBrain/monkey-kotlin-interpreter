@@ -108,6 +108,7 @@ class VmTest : ExpectSpec({
                     "if (1 > 2) { 10 } else { 20 }" to 20,
                     "if (1 >= 1) { 10 } else { 20 }" to 10,
                     "if (1 <= 2) { 10 } else { 20 }" to 10,
+                    "if ((if (false) { 10 })) { 10 } else { 20 }" to 20,
                 )
 
                 data.forEach { (input, expected) ->
