@@ -36,7 +36,7 @@ class VmTest : ExpectSpec({
                     compiler.compile(program)
                     val vm = Vm(compiler.bytecode())
                     vm.run()
-                    val stackTop = vm.stackTop()
+                    val stackTop = vm.lastPoppedStackElem()
                     val result = stackTop as IntegerObject
                     result.value shouldBe expected
                 }

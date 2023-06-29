@@ -46,7 +46,7 @@ class Repl(private val reader: BufferedReader, private val writer: PrintWriter) 
                 val vm = vm.Vm(compiler.bytecode())
                 vm.run()
 
-                vm.stackTop().let {
+                vm.lastPoppedStackElem().let {
                     writer.println(it.render())
                 }
             }

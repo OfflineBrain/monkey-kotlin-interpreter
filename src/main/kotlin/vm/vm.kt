@@ -6,6 +6,7 @@ import compiler.OpAdd
 import compiler.OpConstant
 import compiler.OpDiv
 import compiler.OpMul
+import compiler.OpPop
 import compiler.OpSub
 import compiler.readUint16
 import eval.IntegerObject
@@ -31,12 +32,15 @@ data class Vm(
                     ip += 2
                 }
 
+                OpPop -> {
+                    pop()
+                }
+
                 OpAdd -> {
                     val right = pop()
                     val left = pop()
                     val result = (left as IntegerObject).value + (right as IntegerObject).value
                     push(IntegerObject(result))
-                    ip++
                 }
 
                 OpSub -> {
@@ -44,7 +48,6 @@ data class Vm(
                     val left = pop()
                     val result = (left as IntegerObject).value - (right as IntegerObject).value
                     push(IntegerObject(result))
-                    ip++
                 }
 
                 OpMul -> {
@@ -52,7 +55,6 @@ data class Vm(
                     val left = pop()
                     val result = (left as IntegerObject).value * (right as IntegerObject).value
                     push(IntegerObject(result))
-                    ip++
                 }
 
                 OpDiv -> {
@@ -60,7 +62,6 @@ data class Vm(
                     val left = pop()
                     val result = (left as IntegerObject).value / (right as IntegerObject).value
                     push(IntegerObject(result))
-                    ip++
                 }
             }
 
@@ -73,13 +74,17 @@ data class Vm(
     }
 
     fun push(obj: Object) {
-        stack.add(obj)
+        stack.add(sp, obj)
         sp++
     }
 
     fun pop(): Object {
-        val obj = stack.removeAt(sp - 1)
+        val obj = stack[sp - 1]
         sp--
         return obj
+    }
+
+    fun lastPoppedStackElem(): Object {
+        return stack[sp]
     }
 }
