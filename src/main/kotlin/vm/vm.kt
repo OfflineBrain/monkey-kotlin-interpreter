@@ -5,8 +5,12 @@ import compiler.Instructions
 import compiler.OpAdd
 import compiler.OpConstant
 import compiler.OpDiv
+import compiler.OpEqual
 import compiler.OpFalse
+import compiler.OpGreaterThan
 import compiler.OpMul
+import compiler.OpNot
+import compiler.OpNotEqual
 import compiler.OpPop
 import compiler.OpSub
 import compiler.OpTrue
@@ -73,6 +77,35 @@ data class Vm(
 
                 OpFalse -> {
                     push(BooleanObject.False)
+                }
+
+                OpNot -> {
+                    val operand = pop()
+                    push(
+                        when (operand) {
+                            BooleanObject.True -> BooleanObject.False
+                            BooleanObject.False -> BooleanObject.True
+                            else -> TODO()
+                        }
+                    )
+                }
+
+                OpEqual -> {
+                    val right = pop()
+                    val left = pop()
+                    push(BooleanObject.from(left == right))
+                }
+
+                OpNotEqual -> {
+                    val right = pop()
+                    val left = pop()
+                    push(BooleanObject.from(left != right))
+                }
+
+                OpGreaterThan -> {
+                    val right = pop()
+                    val left = pop()
+                    push(BooleanObject.from((left as IntegerObject).value > (right as IntegerObject).value))
                 }
             }
 

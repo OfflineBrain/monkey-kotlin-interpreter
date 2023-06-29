@@ -46,18 +46,32 @@ data class Compiler(
             is Identifier.Invalid -> TODO()
             is IfExpression -> TODO()
             is InfixExpression -> {
-                compile(node.left)
-                compile(node.right)
+
+                when (node.operator) {
+                    Symbols.LT, Symbols.GTE -> {
+                        compile(node.right)
+                        compile(node.left)
+                    }
+
+                    else -> {
+                        compile(node.left)
+                        compile(node.right)
+                    }
+                }
 
                 when (node.operator) {
                     Symbols.PLUS -> emit(OpAdd)
                     Symbols.MINUS -> emit(OpSub)
                     Symbols.ASTERISK -> emit(OpMul)
                     Symbols.SLASH -> emit(OpDiv)
-//                    Symbols.EQ -> emit(OpEqual)
-//                    Symbols.NOT_EQ -> emit(OpNotEqual)
-//                    Symbols.LT -> emit(OpGreaterThan)
-//                    Symbols.GT -> emit(OpLessThan)
+                    Symbols.EQ -> emit(OpEqual)
+                    Symbols.NOT_EQ -> emit(OpNotEqual)
+                    Symbols.GT, Symbols.LT -> emit(OpGreaterThan)
+                    Symbols.GTE, Symbols.LTE -> {
+                        emit(OpGreaterThan)
+                        emit(OpNot)
+                    }
+
                     else -> TODO()
                 }
             }

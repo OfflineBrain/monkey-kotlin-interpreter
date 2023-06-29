@@ -1,8 +1,8 @@
 package ast
 
+import io.kotest.core.spec.style.ExpectSpec
 import token.Lexer
 import token.Token
-import io.kotest.core.spec.style.ExpectSpec
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -278,6 +278,16 @@ class ParserTest : ExpectSpec({
                     "5 != 5;" to listOf(
                         Token.Number(5, 0, 0),
                         Token.NotEq(0, 2),
+                        Token.Number(5, 0, 4),
+                    ),
+                    "2 <= 5;" to listOf(
+                        Token.Number(2, 0, 0),
+                        Token.Lte(0, 3),
+                        Token.Number(5, 0, 4),
+                    ),
+                    "2 >= 5;" to listOf(
+                        Token.Number(2, 0, 0),
+                        Token.Gte(0, 3),
                         Token.Number(5, 0, 4),
                     ),
                 )

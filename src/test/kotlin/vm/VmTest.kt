@@ -54,6 +54,24 @@ class VmTest : ExpectSpec({
             val data = listOf(
                 "true" to true,
                 "false" to false,
+                "1 < 2" to true,
+                "1 > 2" to false,
+                "1 < 1" to false,
+                "1 > 1" to false,
+                "1 == 1" to true,
+                "1 != 1" to false,
+                "1 == 2" to false,
+                "1 != 2" to true,
+                "1 <= 2" to true,
+                "1 >= 2" to false,
+                "1 <= 1" to true,
+                "1 >= 1" to true,
+                "1 <= 0" to false,
+                "1 >= 0" to true,
+                "true == true" to true,
+                "false == false" to true,
+                "true == false" to false,
+                "true != false" to true,
             )
 
             data.forEach { (input, expected) ->

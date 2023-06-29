@@ -167,6 +167,88 @@ class CompilerTest : ExpectSpec({
                         make(OpPop),
                     ),
                 ),
+                TestCase(
+                    input = "1 > 2",
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpGreaterThan),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "1 < 2",
+                    expectedConstants = listOf(2, 1).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpGreaterThan),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "1 == 2",
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpEqual),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "1 != 2",
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpNotEqual),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "true == false",
+                    expectedConstants = emptyList(),
+                    expectedInstructions = listOf(
+                        make(OpTrue),
+                        make(OpFalse),
+                        make(OpEqual),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "true != false",
+                    expectedConstants = emptyList(),
+                    expectedInstructions = listOf(
+                        make(OpTrue),
+                        make(OpFalse),
+                        make(OpNotEqual),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "1 >= 2",
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpGreaterThan),
+                        make(OpNot),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "1 <= 2",
+                    expectedConstants = listOf(2, 1).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpGreaterThan),
+                        make(OpNot),
+                        make(OpPop),
+                    ),
+                ),
             )
 
             tests.forEach { (input, expectedConstants, expectedInstructions) ->
