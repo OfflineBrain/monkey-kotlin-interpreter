@@ -135,7 +135,10 @@ data class Compiler(
                 emit(OpPop)
             }
 
-            is LetStatement -> TODO()
+            is LetStatement -> {
+                compile(node.value)
+            }
+
             is ReturnStatement -> TODO()
             Nothing -> TODO()
         }

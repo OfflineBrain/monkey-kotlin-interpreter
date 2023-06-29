@@ -19,7 +19,8 @@ const val OpMinus: Opcode = 0x0cu
 const val OpJump: Opcode = 0x0du
 const val OpJumpNotTruthy: Opcode = 0x0eu
 const val OpNull: Opcode = 0x0fu
-
+const val OpSetGlobal: Opcode = 0x10u
+const val OpGetGlobal: Opcode = 0x11u
 
 data class Definition(val name: String, val operandWidths: List<Int>)
 
@@ -40,6 +41,8 @@ val definitions = mapOf(
     OpJump to Definition("OpJump", listOf(2)),
     OpJumpNotTruthy to Definition("OpJumpNotTruthy", listOf(2)),
     OpNull to Definition("OpNull", listOf()),
+    OpSetGlobal to Definition("OpSetGlobal", listOf(2)),
+    OpGetGlobal to Definition("OpGetGlobal", listOf(2)),
 )
 
 fun lookupDefinition(opcode: Opcode): Definition? {
