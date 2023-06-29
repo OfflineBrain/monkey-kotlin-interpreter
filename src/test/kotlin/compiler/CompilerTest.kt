@@ -142,5 +142,44 @@ class CompilerTest : ExpectSpec({
             }
 
         }
+
+        context("boolean expressions") {
+            data class TestCase(
+                val input: String,
+                val expectedConstants: List<Object>,
+                val expectedInstructions: List<Instructions>
+            )
+
+            val tests = listOf(
+                TestCase(
+                    input = "true",
+                    expectedConstants = emptyList(),
+                    expectedInstructions = listOf(
+                        make(OpTrue),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "false",
+                    expectedConstants = emptyList(),
+                    expectedInstructions = listOf(
+                        make(OpFalse),
+                        make(OpPop),
+                    ),
+                ),
+            )
+
+            tests.forEach { (input, expectedConstants, expectedInstructions) ->
+                expect("should compile correctly [$input]") {
+                    val program = parse(input)
+                    val compiler = Compiler()
+                    compiler.compile(program)
+
+                    val bytecode = compiler.bytecode()
+                    bytecode.constants shouldBe expectedConstants
+                    bytecode.instructions shouldBe concatInstructions(*expectedInstructions.toTypedArray())
+                }
+            }
+        }
     }
 })

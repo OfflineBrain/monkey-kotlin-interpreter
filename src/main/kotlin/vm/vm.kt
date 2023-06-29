@@ -5,10 +5,13 @@ import compiler.Instructions
 import compiler.OpAdd
 import compiler.OpConstant
 import compiler.OpDiv
+import compiler.OpFalse
 import compiler.OpMul
 import compiler.OpPop
 import compiler.OpSub
+import compiler.OpTrue
 import compiler.readUint16
+import eval.BooleanObject
 import eval.IntegerObject
 import eval.Object
 
@@ -62,6 +65,14 @@ data class Vm(
                     val left = pop()
                     val result = (left as IntegerObject).value / (right as IntegerObject).value
                     push(IntegerObject(result))
+                }
+
+                OpTrue -> {
+                    push(BooleanObject.True)
+                }
+
+                OpFalse -> {
+                    push(BooleanObject.False)
                 }
             }
 

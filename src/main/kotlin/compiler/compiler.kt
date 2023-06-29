@@ -32,7 +32,14 @@ data class Compiler(
                 node.statements.forEach { compile(it) }
             }
 
-            is BooleanLiteral -> TODO()
+            is BooleanLiteral -> {
+                if (node.value) {
+                    emit(OpTrue)
+                } else {
+                    emit(OpFalse)
+                }
+            }
+
             is CallExpression -> TODO()
             is FunctionLiteral -> TODO()
             is Identifier.Id -> TODO()

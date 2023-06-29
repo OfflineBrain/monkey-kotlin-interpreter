@@ -9,6 +9,8 @@ const val OpSub: Opcode = 0x02u
 const val OpMul: Opcode = 0x03u
 const val OpDiv: Opcode = 0x04u
 const val OpPop: Opcode = 0x05u
+const val OpTrue: Opcode = 0x06u
+const val OpFalse: Opcode = 0x07u
 
 
 data class Definition(val name: String, val operandWidths: List<Int>)
@@ -20,6 +22,8 @@ val definitions = mapOf(
     OpMul to Definition("OpMul", listOf()),
     OpDiv to Definition("OpDiv", listOf()),
     OpPop to Definition("OpPop", listOf()),
+    OpTrue to Definition("OpTrue", listOf()),
+    OpFalse to Definition("OpFalse", listOf()),
 )
 
 fun lookupDefinition(opcode: Opcode): Definition? {
