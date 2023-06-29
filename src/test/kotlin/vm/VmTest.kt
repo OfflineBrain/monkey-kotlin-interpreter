@@ -5,6 +5,7 @@ import ast.Program
 import compiler.Compiler
 import eval.BooleanObject
 import eval.IntegerObject
+import eval.NullObject
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.matchers.shouldBe
 import token.Lexer
@@ -76,6 +77,7 @@ class VmTest : ExpectSpec({
                 "true != false" to true,
                 "!true" to false,
                 "!false" to true,
+                "!(if (false) { 5; })" to true,
             )
 
             data.forEach { (input, expected) ->
@@ -93,28 +95,50 @@ class VmTest : ExpectSpec({
         }
 
         context("a conditional") {
-            val data = listOf(
-                "if (true) { 10 }" to 10,
-                "if (true) { 10 } else { 20 }" to 10,
-                "if (false) { 10 } else { 20 }" to 20,
-                "if (1) { 10 }" to 10,
-                "if (1 < 2) { 10 }" to 10,
-                "if (1 < 2) { 10 } else { 20 }" to 10,
-                "if (1 > 2) { 10 } else { 20 }" to 20,
-                "if (1 >= 1) { 10 } else { 20 }" to 10,
-                "if (1 <= 2) { 10 } else { 20 }" to 10,
-            )
+            context("integer return") {
+                val data = listOf(
+                    "if (true) { 10 }" to 10,
+                    "if (true) { 10 } else { 20 }" to 10,
+                    "if (false) { 10 } else { 20 }" to 20,
+                    "if (1) { 10 }" to 10,
+                    "if (1 < 2) { 10 }" to 10,
+                    "if (1 < 2) { 10 } else { 20 }" to 10,
+                    "if (1 > 2) { 10 } else { 20 }" to 20,
+                    "if (1 >= 1) { 10 } else { 20 }" to 10,
+                    "if (1 <= 2) { 10 } else { 20 }" to 10,
+                )
 
-            data.forEach { (input, expected) ->
-                expect("should return $expected for \"$input\"") {
-                    val program = parse(input)
-                    val compiler = Compiler()
-                    compiler.compile(program)
-                    val vm = Vm(compiler.bytecode())
-                    vm.run()
-                    val stackTop = vm.lastPoppedStackElem()
-                    val result = stackTop as IntegerObject
-                    result.value shouldBe expected
+                data.forEach { (input, expected) ->
+                    expect("should return $expected for \"$input\"") {
+                        val program = parse(input)
+                        val compiler = Compiler()
+                        compiler.compile(program)
+                        val vm = Vm(compiler.bytecode())
+                        vm.run()
+                        val stackTop = vm.lastPoppedStackElem()
+                        val result = stackTop as IntegerObject
+                        result.value shouldBe expected
+                    }
+                }
+            }
+
+            context("null return") {
+                val data = listOf(
+                    "if (1 > 2) { 10 }" to null,
+                    "if (false) { 10 }" to null,
+                )
+
+                data.forEach { (input, expected) ->
+                    expect("should return $expected for \"$input\"") {
+                        val program = parse(input)
+                        val compiler = Compiler()
+                        compiler.compile(program)
+                        val vm = Vm(compiler.bytecode())
+                        vm.run()
+                        val stackTop = vm.lastPoppedStackElem()
+
+                        stackTop shouldBe NullObject
+                    }
                 }
             }
         }

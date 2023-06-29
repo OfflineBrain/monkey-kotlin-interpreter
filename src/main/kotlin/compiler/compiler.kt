@@ -61,21 +61,21 @@ data class Compiler(
                     removeLastPop()
                 }
 
-                if (node.alternative == null) {
-                    val afterConsequencePosition = instructions.size
-                    changeOperand(jump, afterConsequencePosition)
-                } else {
-                    val alternativeJump = emit(OpJump, 0)
-                    val afterConsequencePosition = instructions.size
-                    changeOperand(jump, afterConsequencePosition)
+                val alternativeJump = emit(OpJump, 0)
+                val afterConsequencePosition = instructions.size
+                changeOperand(jump, afterConsequencePosition)
 
+                if (node.alternative == null) {
+                    emit(OpNull)
+                } else {
                     compile(node.alternative)
                     if (isLastInstructionPop()) {
                         removeLastPop()
                     }
-                    val afterAlternativePosition = instructions.size
-                    changeOperand(alternativeJump, afterAlternativePosition)
                 }
+
+                val afterAlternativePosition = instructions.size
+                changeOperand(alternativeJump, afterAlternativePosition)
             }
 
             is InfixExpression -> {

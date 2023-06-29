@@ -305,8 +305,10 @@ class CompilerTest : ExpectSpec({
                     expectedConstants = listOf(10, 3333).map { IntegerObject(it) },
                     expectedInstructions = listOf(
                         make(OpTrue),
-                        make(OpJumpNotTruthy, 0x0007),
+                        make(OpJumpNotTruthy, 0x000a),
                         make(OpConstant, 0x00),
+                        make(OpJump, 0x000b),
+                        make(OpNull),
                         make(OpPop),
                         make(OpConstant, 0x01),
                         make(OpPop),

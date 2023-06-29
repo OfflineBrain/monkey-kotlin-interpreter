@@ -18,6 +18,7 @@ const val OpNot: Opcode = 0x0bu
 const val OpMinus: Opcode = 0x0cu
 const val OpJump: Opcode = 0x0du
 const val OpJumpNotTruthy: Opcode = 0x0eu
+const val OpNull: Opcode = 0x0fu
 
 
 data class Definition(val name: String, val operandWidths: List<Int>)
@@ -37,7 +38,8 @@ val definitions = mapOf(
     OpNot to Definition("OpNot", listOf()),
     OpMinus to Definition("OpMinus", listOf()),
     OpJump to Definition("OpJump", listOf(2)),
-    OpJumpNotTruthy to Definition("OpJumpNotTruthy", listOf(2))
+    OpJumpNotTruthy to Definition("OpJumpNotTruthy", listOf(2)),
+    OpNull to Definition("OpNull", listOf()),
 )
 
 fun lookupDefinition(opcode: Opcode): Definition? {

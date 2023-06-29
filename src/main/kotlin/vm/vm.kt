@@ -14,6 +14,7 @@ import compiler.OpMinus
 import compiler.OpMul
 import compiler.OpNot
 import compiler.OpNotEqual
+import compiler.OpNull
 import compiler.OpPop
 import compiler.OpSub
 import compiler.OpTrue
@@ -123,6 +124,10 @@ data class Vm(
                     if (toInvertedBooleanObject(condition).value) {
                         ip = pos - 1
                     }
+                }
+
+                OpNull -> {
+                    push(NullObject)
                 }
             }
 
