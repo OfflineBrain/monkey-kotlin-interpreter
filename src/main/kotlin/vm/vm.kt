@@ -20,11 +20,13 @@ import compiler.OpPop
 import compiler.OpSetGlobal
 import compiler.OpSub
 import compiler.OpTrue
+import compiler.Opcode
 import compiler.readUint16
 import eval.BooleanObject
 import eval.IntegerObject
 import eval.NullObject
 import eval.Object
+import eval.StringObject
 
 const val GlobalSize = 65536
 
@@ -41,8 +43,7 @@ data class Vm(
     fun run() {
         var ip = 0
         while (ip < instructions.size) {
-            val op = instructions[ip]
-            when (op) {
+            when (val op = instructions[ip]) {
                 OpConstant -> {
                     val constIndex = readUint16(instructions.subList(ip + 1, instructions.size))
                     push(constants[constIndex])
@@ -53,33 +54,12 @@ data class Vm(
                     pop()
                 }
 
-                OpAdd -> {
+                OpAdd, OpSub, OpMul, OpDiv, OpEqual, OpNotEqual, OpGreaterThan -> {
                     val right = pop()
                     val left = pop()
-                    val result = (left as IntegerObject).value + (right as IntegerObject).value
-                    push(IntegerObject(result))
+                    executeBinaryOperation(op, left, right)
                 }
 
-                OpSub -> {
-                    val right = pop()
-                    val left = pop()
-                    val result = (left as IntegerObject).value - (right as IntegerObject).value
-                    push(IntegerObject(result))
-                }
-
-                OpMul -> {
-                    val right = pop()
-                    val left = pop()
-                    val result = (left as IntegerObject).value * (right as IntegerObject).value
-                    push(IntegerObject(result))
-                }
-
-                OpDiv -> {
-                    val right = pop()
-                    val left = pop()
-                    val result = (left as IntegerObject).value / (right as IntegerObject).value
-                    push(IntegerObject(result))
-                }
 
                 OpTrue -> {
                     push(BooleanObject.True)
@@ -97,24 +77,6 @@ data class Vm(
                 OpMinus -> {
                     val operand = pop()
                     push(IntegerObject(-(operand as IntegerObject).value))
-                }
-
-                OpEqual -> {
-                    val right = pop()
-                    val left = pop()
-                    push(BooleanObject.from(left == right))
-                }
-
-                OpNotEqual -> {
-                    val right = pop()
-                    val left = pop()
-                    push(BooleanObject.from(left != right))
-                }
-
-                OpGreaterThan -> {
-                    val right = pop()
-                    val left = pop()
-                    push(BooleanObject.from((left as IntegerObject).value > (right as IntegerObject).value))
                 }
 
                 OpJump -> {
@@ -152,6 +114,67 @@ data class Vm(
         }
     }
 
+    fun lastPoppedStackElem(): Object {
+        return stack[sp]
+    }
+
+    private fun executeBinaryOperation(op: Opcode, left: Object, right: Object) {
+
+        if (left is IntegerObject && right is IntegerObject) {
+            executeBinaryIntegerOperation(op, left, right)
+            return
+        }
+
+        when (op) {
+            OpAdd -> {
+                push(StringObject(left.toString() + right.toString()))
+            }
+
+            OpEqual -> {
+                push(BooleanObject.from(left == right))
+            }
+
+            OpNotEqual -> {
+                push(BooleanObject.from(left != right))
+            }
+        }
+    }
+
+    private fun executeBinaryIntegerOperation(op: Opcode, left: IntegerObject, right: IntegerObject) {
+        val leftValue = left.value
+        val rightValue = right.value
+
+        when (op) {
+            OpAdd -> {
+                push(IntegerObject(leftValue + rightValue))
+            }
+
+            OpSub -> {
+                push(IntegerObject(leftValue - rightValue))
+            }
+
+            OpMul -> {
+                push(IntegerObject(leftValue * rightValue))
+            }
+
+            OpDiv -> {
+                push(IntegerObject(leftValue / rightValue))
+            }
+
+            OpEqual -> {
+                push(BooleanObject.from(leftValue == rightValue))
+            }
+
+            OpNotEqual -> {
+                push(BooleanObject.from(leftValue != rightValue))
+            }
+
+            OpGreaterThan -> {
+                push(BooleanObject.from(leftValue > rightValue))
+            }
+        }
+    }
+
     private fun toInvertedBooleanObject(operand: Object) = when (operand) {
         BooleanObject.True -> BooleanObject.False
         BooleanObject.False -> BooleanObject.True
@@ -159,22 +182,14 @@ data class Vm(
         else -> BooleanObject.False
     }
 
-    fun stackTop(): Object {
-        return stack[sp - 1]
-    }
-
-    fun push(obj: Object) {
+    private fun push(obj: Object) {
         stack.add(sp, obj)
         sp++
     }
 
-    fun pop(): Object {
+    private fun pop(): Object {
         val obj = stack[sp - 1]
         sp--
         return obj
-    }
-
-    fun lastPoppedStackElem(): Object {
-        return stack[sp]
     }
 }

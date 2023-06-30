@@ -4,6 +4,7 @@ import ast.Parser
 import ast.Program
 import eval.IntegerObject
 import eval.Object
+import eval.StringObject
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
@@ -13,10 +14,24 @@ import token.Lexer
 @DisplayName("Compiler")
 class CompilerTest : ExpectSpec({
 
+    data class TestCase(
+        val input: String,
+        val expectedConstants: List<Object>,
+        val expectedInstructions: List<Instructions>
+    )
+
+
     fun parse(input: String): Program {
         val lexer = Lexer(input)
         val parser = Parser(lexer)
         return parser.parseProgram()
+    }
+
+    fun bytecode(input: String): Bytecode {
+        val program = parse(input)
+        val compiler = Compiler()
+        compiler.compile(program)
+        return compiler.bytecode()
     }
 
     fun concatInstructions(vararg instructions: Instructions): Instructions {
@@ -29,11 +44,6 @@ class CompilerTest : ExpectSpec({
 
     context("compile integer arithmetic") {
 
-        data class TestCase(
-            val input: String,
-            val expectedConstants: List<Object>,
-            val expectedInstructions: List<Instructions>
-        )
 
         val tests = listOf(
             TestCase(
@@ -98,25 +108,25 @@ class CompilerTest : ExpectSpec({
         )
 
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
-            val program = parse(input)
-            val compiler = Compiler()
-            compiler.compile(program)
-            val bytecode = compiler.bytecode()
+            val bytecode = bytecode(input)
 
-            expect("input \"$input\"") {
+            expect("should compile constants") {
                 bytecode.constants shouldBe expectedConstants
-                bytecode.instructions shouldBe concatInstructions(*expectedInstructions.toTypedArray())
+            }
+
+            expect("should compile instructions") {
+                val instructions = concatInstructions(*expectedInstructions.toTypedArray())
+
+                withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
+                    bytecode.instructions shouldBe instructions
+                }
             }
         }
 
     }
 
     context("compile boolean expressions") {
-        data class TestCase(
-            val input: String,
-            val expectedConstants: List<Object>,
-            val expectedInstructions: List<Instructions>
-        )
+
 
         val tests = listOf(
             TestCase(
@@ -238,24 +248,24 @@ class CompilerTest : ExpectSpec({
         )
 
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
-            val program = parse(input)
-            val compiler = Compiler()
-            compiler.compile(program)
+            val bytecode = bytecode(input)
 
-            val bytecode = compiler.bytecode()
-            expect("input \"$input\"") {
+            expect("should compile constants") {
                 bytecode.constants shouldBe expectedConstants
-                bytecode.instructions shouldBe concatInstructions(*expectedInstructions.toTypedArray())
+            }
+
+            expect("should compile instructions") {
+                val instructions = concatInstructions(*expectedInstructions.toTypedArray())
+
+                withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
+                    bytecode.instructions shouldBe instructions
+                }
             }
         }
     }
 
     context("compile conditionals") {
-        data class TestCase(
-            val input: String,
-            val expectedConstants: List<Object>,
-            val expectedInstructions: List<Instructions>
-        )
+
 
         val tests = listOf(
             TestCase(
@@ -291,11 +301,49 @@ class CompilerTest : ExpectSpec({
 
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
             context("input: \"$input\"") {
-                val program = parse(input)
-                val compiler = Compiler()
-                compiler.compile(program)
+                val bytecode = bytecode(input)
 
-                val bytecode = compiler.bytecode()
+                expect("should compile constants") {
+                    bytecode.constants shouldBe expectedConstants
+                }
+
+                expect("should compile instructions") {
+                    val instructions = concatInstructions(*expectedInstructions.toTypedArray())
+
+                    withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
+                        bytecode.instructions shouldBe instructions
+                    }
+                }
+            }
+        }
+    }
+
+    context("compile string expressions") {
+        val tests = listOf(
+            TestCase(
+                input = "\"monkey\"",
+                expectedConstants = listOf("monkey").map { StringObject(it) },
+                expectedInstructions = listOf(
+                    make(OpConstant, 0x00),
+                    make(OpPop),
+                ),
+            ),
+            TestCase(
+                input = "\"mon\" + \"key\"",
+                expectedConstants = listOf("mon", "key").map { StringObject(it) },
+                expectedInstructions = listOf(
+                    make(OpConstant, 0x00),
+                    make(OpConstant, 0x01),
+                    make(OpAdd),
+                    make(OpPop),
+                ),
+            )
+        )
+
+        tests.forEach { (input, expectedConstants, expectedInstructions) ->
+            context("input: \"$input\"") {
+                val bytecode = bytecode(input)
+
                 expect("should compile constants") {
                     bytecode.constants shouldBe expectedConstants
                 }
@@ -312,11 +360,7 @@ class CompilerTest : ExpectSpec({
     }
 
     context("compile global let statements") {
-        data class TestCase(
-            val input: String,
-            val expectedConstants: List<Object>,
-            val expectedInstructions: List<Instructions>
-        )
+
 
         val tests = listOf(
             TestCase(
@@ -365,10 +409,7 @@ class CompilerTest : ExpectSpec({
 
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
             context("input: \"$input\"") {
-                val program = parse(input)
-                val compiler = Compiler()
-                compiler.compile(program)
-                val bytecode = compiler.bytecode()
+                val bytecode = bytecode(input)
 
                 expect("should compile constants") {
                     bytecode.constants shouldBe expectedConstants
@@ -385,3 +426,5 @@ class CompilerTest : ExpectSpec({
         }
     }
 })
+
+

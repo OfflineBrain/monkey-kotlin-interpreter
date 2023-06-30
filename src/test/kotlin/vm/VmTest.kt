@@ -6,6 +6,8 @@ import compiler.Compiler
 import eval.BooleanObject
 import eval.IntegerObject
 import eval.NullObject
+import eval.Object
+import eval.StringObject
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.matchers.shouldBe
@@ -19,6 +21,15 @@ class VmTest : ExpectSpec({
             val lexer = Lexer(input)
             val parser = Parser(lexer)
             return parser.parseProgram()
+        }
+
+        fun extracted(input: String): Object {
+            val program = parse(input)
+            val compiler = Compiler()
+            compiler.compile(program)
+            val vm = Vm(compiler.bytecode())
+            vm.run()
+            return vm.lastPoppedStackElem()
         }
 
         context("an integer arithmetic") {
@@ -43,12 +54,7 @@ class VmTest : ExpectSpec({
             data.forEach {
                 val (input, expected) = it
                 expect("should return $expected for \"$input\"") {
-                    val program = parse(input)
-                    val compiler = Compiler()
-                    compiler.compile(program)
-                    val vm = Vm(compiler.bytecode())
-                    vm.run()
-                    val stackTop = vm.lastPoppedStackElem()
+                    val stackTop = extracted(input)
                     val result = stackTop as IntegerObject
                     result.value shouldBe expected
                 }
@@ -84,12 +90,7 @@ class VmTest : ExpectSpec({
 
             data.forEach { (input, expected) ->
                 expect("should return $expected for \"$input\"") {
-                    val program = parse(input)
-                    val compiler = Compiler()
-                    compiler.compile(program)
-                    val vm = Vm(compiler.bytecode())
-                    vm.run()
-                    val stackTop = vm.lastPoppedStackElem()
+                    val stackTop = extracted(input)
                     val result = stackTop as BooleanObject
                     result.value shouldBe expected
                 }
@@ -146,6 +147,22 @@ class VmTest : ExpectSpec({
             }
         }
 
+        context("string expression") {
+            val data = listOf(
+                "\"monkey\"" to "monkey",
+                "\"mon\" + \"key\"" to "monkey",
+                "\"mon\" + \"key\" + \"banana\"" to "monkeybanana",
+            )
+
+            data.forEach { (input, expected) ->
+                expect("should return $expected for \"$input\"") {
+                    val stackTop = extracted(input)
+                    val result = stackTop as StringObject
+                    result.value shouldBe expected
+                }
+            }
+        }
+
         context("global let statement") {
             val data = listOf(
                 "let one = 1; one" to 1,
@@ -154,12 +171,7 @@ class VmTest : ExpectSpec({
             )
 
             data.forEach { (input, expected) ->
-                val program = parse(input)
-                val compiler = Compiler()
-                compiler.compile(program)
-                val vm = Vm(compiler.bytecode())
-                vm.run()
-                val stackTop = vm.lastPoppedStackElem()
+                val stackTop = extracted(input)
                 val result = stackTop as IntegerObject
 
                 expect("should return $expected for \"$input\"") {

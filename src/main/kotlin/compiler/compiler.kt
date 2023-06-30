@@ -20,6 +20,7 @@ import ast.ReturnStatement
 import ast.StringLiteral
 import eval.IntegerObject
 import eval.Object
+import eval.StringObject
 import token.Symbols
 
 data class EmittedInstruction(
@@ -130,7 +131,10 @@ data class Compiler(
                 }
             }
 
-            is StringLiteral -> TODO()
+            is StringLiteral -> {
+                emit(OpConstant, addConstant(StringObject(node.value)))
+            }
+
             is BlockStatement -> {
                 for (statement in node.statements) {
                     compile(statement)
