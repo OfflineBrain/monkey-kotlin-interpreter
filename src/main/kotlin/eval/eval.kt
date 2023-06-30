@@ -19,6 +19,14 @@ import ast.Program
 import ast.ReturnStatement
 import ast.Statement
 import ast.StringLiteral
+import `object`.BooleanObject
+import `object`.ErrorObject
+import `object`.FunctionObject
+import `object`.IntegerObject
+import `object`.NullObject
+import `object`.Object
+import `object`.ReturnValueObject
+import `object`.StringObject
 import token.Symbols
 
 tailrec fun eval(node: ast.Node, env: Environment): Object {

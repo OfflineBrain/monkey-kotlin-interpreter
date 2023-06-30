@@ -1,7 +1,8 @@
-package eval
+package `object`
 
 import ast.Identifier
 import ast.Statement
+import eval.Environment
 
 typealias ObjectType = String
 

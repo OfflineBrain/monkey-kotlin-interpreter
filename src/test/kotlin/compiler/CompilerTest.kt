@@ -2,9 +2,9 @@ package compiler
 
 import ast.Parser
 import ast.Program
-import eval.IntegerObject
-import eval.Object
-import eval.StringObject
+import `object`.IntegerObject
+import `object`.Object
+import `object`.StringObject
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec

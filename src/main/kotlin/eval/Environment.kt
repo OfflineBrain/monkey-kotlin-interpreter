@@ -1,5 +1,7 @@
 package eval
 
+import `object`.Object
+
 data class Environment(
     val store: MutableMap<String, Object> = mutableMapOf(),
     val outer: Environment? = null

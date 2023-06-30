@@ -3,11 +3,11 @@ package vm
 import ast.Parser
 import ast.Program
 import compiler.Compiler
-import eval.BooleanObject
-import eval.IntegerObject
-import eval.NullObject
-import eval.Object
-import eval.StringObject
+import `object`.BooleanObject
+import `object`.IntegerObject
+import `object`.NullObject
+import `object`.Object
+import `object`.StringObject
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.matchers.shouldBe

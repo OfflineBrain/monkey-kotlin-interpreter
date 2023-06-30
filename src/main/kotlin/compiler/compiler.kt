@@ -18,9 +18,9 @@ import ast.PrefixExpression
 import ast.Program
 import ast.ReturnStatement
 import ast.StringLiteral
-import eval.IntegerObject
-import eval.Object
-import eval.StringObject
+import `object`.IntegerObject
+import `object`.Object
+import `object`.StringObject
 import token.Symbols
 
 data class EmittedInstruction(

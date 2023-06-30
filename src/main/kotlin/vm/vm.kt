@@ -22,11 +22,11 @@ import compiler.OpSub
 import compiler.OpTrue
 import compiler.Opcode
 import compiler.readUint16
-import eval.BooleanObject
-import eval.IntegerObject
-import eval.NullObject
-import eval.Object
-import eval.StringObject
+import `object`.BooleanObject
+import `object`.IntegerObject
+import `object`.NullObject
+import `object`.Object
+import `object`.StringObject
 
 const val GlobalSize = 65536
 

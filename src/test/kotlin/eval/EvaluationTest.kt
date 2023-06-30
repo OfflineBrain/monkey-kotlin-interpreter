@@ -6,6 +6,14 @@ import ast.BooleanLiteral
 import ast.Parser
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
+import `object`.BOOLEAN
+import `object`.BooleanObject
+import `object`.ErrorObject
+import `object`.FunctionObject
+import `object`.INTEGER
+import `object`.IntegerObject
+import `object`.NullObject
+import `object`.StringObject
 import kotlin.test.assertEquals
 
 @DisplayName("Evaluation")
