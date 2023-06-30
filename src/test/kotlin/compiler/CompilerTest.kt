@@ -2,13 +2,14 @@ package compiler
 
 import ast.Parser
 import ast.Program
-import `object`.IntegerObject
-import `object`.Object
-import `object`.StringObject
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.matchers.shouldBe
+import `object`.CompiledFunctionObject
+import `object`.IntegerObject
+import `object`.Object
+import `object`.StringObject
 import token.Lexer
 
 @DisplayName("Compiler")
@@ -40,6 +41,40 @@ class CompilerTest : ExpectSpec({
             out.addAll(instruction)
         }
         return out
+    }
+
+    context("scopes") {
+        val compiler = Compiler()
+        compiler.emit(OpMul)
+
+        context("entering a scope") {
+            compiler.enterScope()
+
+            expect("index should be incremented") {
+                compiler.scopeIndex shouldBe 1
+            }
+        }
+
+        context("emitting an instruction in the new scope") {
+            compiler.emit(OpSub)
+            expect("should emit an instruction in the current scope [scope : ${compiler.scopeIndex}]") {
+                compiler.scopes[compiler.scopeIndex].instructions shouldBe listOf(OpSub)
+            }
+        }
+
+        context("leaving a scope") {
+            compiler.leaveScope()
+            expect("index should be decremented") {
+                compiler.scopeIndex shouldBe 0
+            }
+        }
+
+        context("emitting an instruction in the previous scope") {
+            compiler.emit(OpAdd)
+            expect("should emit an instruction in the current scope [scope : ${compiler.scopeIndex}]") {
+                compiler.scopes[compiler.scopeIndex].instructions shouldBe listOf(OpMul, OpAdd)
+            }
+        }
     }
 
     context("compile integer arithmetic") {
@@ -420,6 +455,51 @@ class CompilerTest : ExpectSpec({
 
                     withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
                         bytecode.instructions shouldBe instructions
+                    }
+                }
+            }
+        }
+    }
+
+    context("compile functions") {
+
+        context("without arguments") {
+            val tests = listOf(
+                TestCase(
+                    input = "fn() { return 5 + 10 }",
+                    expectedConstants = listOf(5, 10).map { IntegerObject(it) } + listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpConstant, 0x00),
+                                make(OpConstant, 0x01),
+                                make(OpAdd),
+                                make(OpReturnValue),
+                            ),
+                        )
+                    ),
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpAdd),
+                        make(OpReturnValue),
+                    ),
+                ),
+            )
+
+            tests.forEach { (input, expectedConstants, expectedInstructions) ->
+                context("input: \"$input\"") {
+                    val bytecode = bytecode(input)
+
+                    expect("should compile constants") {
+                        bytecode.constants shouldBe expectedConstants
+                    }
+
+                    expect("should compile instructions") {
+                        val instructions = concatInstructions(*expectedInstructions.toTypedArray())
+
+                        withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
+                            bytecode.instructions shouldBe instructions
+                        }
                     }
                 }
             }

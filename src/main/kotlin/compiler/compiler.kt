@@ -29,12 +29,13 @@ data class EmittedInstruction(
 )
 
 data class Compiler(
-    val instructions: Instructions = mutableListOf(),
     val constants: MutableList<Object> = mutableListOf(),
     val symbolTable: SymbolTable = SymbolTable(),
+    val scopes: MutableList<CompilationScope> = mutableListOf(CompilationScope())
 ) {
-    private var lastInstruction: EmittedInstruction? = null
-    private var previousInstruction: EmittedInstruction? = null
+    var scopeIndex = 0
+
+    fun bytecode() = Bytecode(currentInstructions(), constants)
 
     tailrec fun compile(node: Node) {
         when (node) {
@@ -70,7 +71,7 @@ data class Compiler(
                 }
 
                 val alternativeJump = emit(OpJump, 0)
-                val afterConsequencePosition = instructions.size
+                val afterConsequencePosition = currentInstructions().size
                 changeOperand(jump, afterConsequencePosition)
 
                 if (node.alternative == null) {
@@ -82,7 +83,7 @@ data class Compiler(
                     }
                 }
 
-                val afterAlternativePosition = instructions.size
+                val afterAlternativePosition = currentInstructions().size
                 changeOperand(alternativeJump, afterAlternativePosition)
             }
 
@@ -157,12 +158,7 @@ data class Compiler(
         }
     }
 
-    private fun addConstant(obj: Object): Int {
-        constants += obj
-        return constants.size - 1
-    }
-
-    private fun emit(op: Opcode, vararg operands: Int): Int {
+    fun emit(op: Opcode, vararg operands: Int): Int {
         val instruction = make(op, *operands)
         val position = addInstruction(instruction)
 
@@ -171,42 +167,77 @@ data class Compiler(
         return position
     }
 
+    fun enterScope() {
+        val scope = CompilationScope()
+        scopes += scope
+        scopeIndex++
+    }
+
+    fun leaveScope() {
+        val scope = scopes.removeAt(scopeIndex)
+        scopeIndex--
+
+        val lastInstruction = scope.lastInstruction
+        if (lastInstruction?.op == OpPop) {
+            removeLastPop()
+            scope.lastInstruction = scope.previousInstruction
+        }
+    }
+
+    private fun addConstant(obj: Object): Int {
+        constants += obj
+        return constants.size - 1
+    }
+
     private fun addInstruction(instruction: Instructions): Int {
-        val position = instructions.size
-        instructions += instruction
+        val position = currentInstructions().size
+        currentInstructions() += instruction
+
         return position
     }
 
     private fun setLastInstruction(op: Opcode, position: Int) {
-        previousInstruction = lastInstruction
-        lastInstruction = EmittedInstruction(op, position)
+        val scope = currentScope()
+        scope.previousInstruction = scope.lastInstruction
+        scope.lastInstruction = EmittedInstruction(op, position)
     }
 
     private fun isLastInstructionPop(): Boolean {
-        return lastInstruction?.op == OpPop
+        return currentScope().lastInstruction?.op == OpPop
     }
 
     private fun removeLastPop() {
-        while (instructions.size > lastInstruction!!.position) {
-            instructions.removeLast()
+        val scope = currentScope()
+        while (scope.instructions.size > scope.lastInstruction!!.position) {
+            scope.instructions.removeLast()
         }
-        lastInstruction = previousInstruction
+        scope.lastInstruction = scope.previousInstruction
     }
 
     private fun changeOperand(opPosition: Int, operand: Int) {
-        val op = instructions[opPosition]
+        val op = currentInstructions()[opPosition]
         val newInstruction = make(op, operand)
 
         replaceInstruction(opPosition, newInstruction)
     }
 
     private fun replaceInstruction(position: Int, newInstruction: Instructions) {
+        val scope = currentScope()
         newInstruction.forEachIndexed { index, instruction ->
-            instructions[position + index] = instruction
+            scope.instructions[position + index] = instruction
         }
     }
 
-    fun bytecode() = Bytecode(instructions, constants)
+    private fun currentInstructions() = currentScope().instructions
+
+    private fun currentScope() = scopes[scopeIndex]
 }
 
 data class Bytecode(val instructions: Instructions, val constants: List<Object>)
+
+data class CompilationScope(
+    val instructions: Instructions = mutableListOf(),
+    var lastInstruction: EmittedInstruction? = null,
+    var previousInstruction: EmittedInstruction? = null,
+//    val symbolTable: SymbolTable = SymbolTable(),
+)

@@ -2,6 +2,8 @@ package `object`
 
 import ast.Identifier
 import ast.Statement
+import compiler.Instructions
+import compiler.string
 import eval.Environment
 
 typealias ObjectType = String
@@ -17,6 +19,7 @@ const val NULL = "NULL"
 const val RETURN_VALUE = "RETURN_VALUE"
 const val ERROR = "ERROR"
 const val FUNCTION = "FUNCTION"
+const val COMPILED_FUNCTION = "COMPILED_FUNCTION"
 const val STRING = "STRING"
 
 data class IntegerObject(val value: Int) : Object {
@@ -135,5 +138,17 @@ data class FunctionObject(
 
     override fun render(): String {
         return "fn(${parameters.joinToString(", ")}) ${body.render()}"
+    }
+}
+
+data class CompiledFunctionObject(
+    val instructions: Instructions,
+) : Object {
+    override fun type(): ObjectType {
+        return COMPILED_FUNCTION
+    }
+
+    override fun render(): String {
+        return instructions.string()
     }
 }
