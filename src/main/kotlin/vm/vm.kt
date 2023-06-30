@@ -23,31 +23,49 @@ import compiler.OpTrue
 import compiler.Opcode
 import compiler.readUint16
 import `object`.BooleanObject
+import `object`.CompiledFunctionObject
 import `object`.IntegerObject
 import `object`.NullObject
 import `object`.Object
 import `object`.StringObject
 
 const val GlobalSize = 65536
+const val MaxFrames = 1024
+const val StackSize = 2048
 
 data class Vm(
-    val instructions: Instructions = mutableListOf(),
-    val constants: MutableList<Object> = mutableListOf(),
-    val globals: MutableList<Object> = MutableList(GlobalSize) { NullObject },
+    private val frames: MutableList<Frame> = mutableListOf(),
+    private var frameIndex: Int = 0,
+    private val constants: MutableList<Object> = mutableListOf(),
+    private val globals: MutableList<Object> = MutableList(GlobalSize) { NullObject },
 ) {
-    constructor(bytecode: Bytecode) : this(bytecode.instructions, bytecode.constants.toMutableList())
+    constructor(bytecode: Bytecode) : this(
+        frames = ArrayList<Frame>(MaxFrames)
+            .also {
+                it.add(Frame(CompiledFunctionObject(bytecode.instructions), 0))
+            },
+        frameIndex = 1,
+        constants = bytecode.constants.toMutableList(),
+    )
 
-    private val stack: MutableList<Object> = MutableList(2048) { NullObject }
-    private var sp = 0
+    private val stack: MutableList<Object> = MutableList(StackSize) { NullObject }
+    private var sp: Int = 0
 
     fun run() {
-        var ip = 0
-        while (ip < instructions.size) {
-            when (val op = instructions[ip]) {
+        lateinit var ins: Instructions
+        var op: Opcode
+
+        while (currentFrame().ip < currentFrame().instructions.size) {
+            val frame = currentFrame()
+
+            ins = currentFrame().instructions
+            op = ins[frame.ip]
+
+            when (op) {
                 OpConstant -> {
-                    val constIndex = readUint16(instructions.subList(ip + 1, instructions.size))
+                    val constIndex = readUint16(ins.subList(frame.ip + 1, ins.size))
                     push(constants[constIndex])
-                    ip += 2
+                    frame.ip += 2
                 }
 
                 OpPop -> {
@@ -80,28 +98,28 @@ data class Vm(
                 }
 
                 OpJump -> {
-                    val pos = readUint16(instructions.subList(ip + 1, instructions.size))
-                    ip = pos - 1
+                    val pos = readUint16(ins.subList(frame.ip + 1, ins.size))
+                    frame.ip = pos - 1
                 }
 
                 OpJumpNotTruthy -> {
-                    val pos = readUint16(instructions.subList(ip + 1, instructions.size))
-                    ip += 2
+                    val pos = readUint16(ins.subList(frame.ip + 1, ins.size))
+                    frame.ip += 2
                     val condition = pop()
                     if (toInvertedBooleanObject(condition).value) {
-                        ip = pos - 1
+                        frame.ip = pos - 1
                     }
                 }
 
                 OpSetGlobal -> {
-                    val globalIndex = readUint16(instructions.subList(ip + 1, instructions.size))
-                    ip += 2
+                    val globalIndex = readUint16(ins.subList(frame.ip + 1, ins.size))
+                    frame.ip += 2
                     globals[globalIndex] = pop()
                 }
 
                 OpGetGlobal -> {
-                    val globalIndex = readUint16(instructions.subList(ip + 1, instructions.size))
-                    ip += 2
+                    val globalIndex = readUint16(ins.subList(frame.ip + 1, ins.size))
+                    frame.ip += 2
                     push(globals[globalIndex])
                 }
 
@@ -110,12 +128,26 @@ data class Vm(
                 }
             }
 
-            ip++
+            frame.ip++
         }
     }
 
     fun lastPoppedStackElem(): Object {
         return stack[sp]
+    }
+
+    private fun currentFrame(): Frame {
+        return frames[frameIndex - 1]
+    }
+
+    private fun pushFrame(frame: Frame) {
+        frames.add(frame)
+        frameIndex++
+    }
+
+    private fun popFrame(): Frame {
+        frameIndex--
+        return frames.removeAt(frameIndex)
     }
 
     private fun executeBinaryOperation(op: Opcode, left: Object, right: Object) {
