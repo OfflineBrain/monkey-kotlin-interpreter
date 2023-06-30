@@ -143,17 +143,19 @@ class CompilerTest : ExpectSpec({
         )
 
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
-            val bytecode = bytecode(input)
+            context("input: \"$input\"") {
+                val bytecode = bytecode(input)
 
-            expect("should compile constants") {
-                bytecode.constants shouldBe expectedConstants
-            }
+                expect("should compile constants") {
+                    bytecode.constants shouldBe expectedConstants
+                }
 
-            expect("should compile instructions") {
-                val instructions = concatInstructions(*expectedInstructions.toTypedArray())
+                expect("should compile instructions") {
+                    val instructions = concatInstructions(*expectedInstructions.toTypedArray())
 
-                withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
-                    bytecode.instructions shouldBe instructions
+                    withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
+                        bytecode.instructions shouldBe instructions
+                    }
                 }
             }
         }
@@ -283,17 +285,19 @@ class CompilerTest : ExpectSpec({
         )
 
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
-            val bytecode = bytecode(input)
+            context("input: \"$input\"") {
+                val bytecode = bytecode(input)
 
-            expect("should compile constants") {
-                bytecode.constants shouldBe expectedConstants
-            }
+                expect("should compile constants") {
+                    bytecode.constants shouldBe expectedConstants
+                }
 
-            expect("should compile instructions") {
-                val instructions = concatInstructions(*expectedInstructions.toTypedArray())
+                expect("should compile instructions") {
+                    val instructions = concatInstructions(*expectedInstructions.toTypedArray())
 
-                withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
-                    bytecode.instructions shouldBe instructions
+                    withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
+                        bytecode.instructions shouldBe instructions
+                    }
                 }
             }
         }
