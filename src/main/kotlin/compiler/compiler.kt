@@ -52,7 +52,11 @@ data class Compiler(
                 }
             }
 
-            is CallExpression -> TODO()
+            is CallExpression -> {
+                compile(node.function)
+                emit(OpCall)
+            }
+
             is FunctionLiteral -> {
                 enterScope()
                 compile(node.body)

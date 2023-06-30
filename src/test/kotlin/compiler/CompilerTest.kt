@@ -508,6 +508,52 @@ class CompilerTest : ExpectSpec({
                 verifyTestCase(input, expectedConstants, expectedInstructions)
             }
         }
+
+        context("call") {
+            val tests = listOf(
+                TestCase(
+                    input = "fn() { 24 }();",
+                    expectedConstants = listOf(24).map { IntegerObject(it) } + listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpConstant, 0x00),
+                                make(OpReturnValue),
+                            ),
+                        )
+                    ),
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x01),
+                        make(OpCall),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = """
+                        let noArg = fn() { 24 };
+                        noArg();
+                    """.trimIndent(),
+                    expectedConstants = listOf(24).map { IntegerObject(it) } + listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpConstant, 0x00),
+                                make(OpReturnValue),
+                            ),
+                        )
+                    ),
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x01),
+                        make(OpSetGlobal, 0x00),
+                        make(OpGetGlobal, 0x00),
+                        make(OpCall),
+                        make(OpPop),
+                    ),
+                ),
+            )
+
+            tests.forEach { (input, expectedConstants, expectedInstructions) ->
+                verifyTestCase(input, expectedConstants, expectedInstructions)
+            }
+        }
     }
 })
 
