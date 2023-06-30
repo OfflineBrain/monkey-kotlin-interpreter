@@ -478,10 +478,8 @@ class CompilerTest : ExpectSpec({
                         )
                     ),
                     expectedInstructions = listOf(
-                        make(OpConstant, 0x00),
-                        make(OpConstant, 0x01),
-                        make(OpAdd),
-                        make(OpReturnValue),
+                        make(OpConstant, 0x02),
+                        make(OpPop),
                     ),
                 ),
             )

@@ -18,6 +18,7 @@ import ast.PrefixExpression
 import ast.Program
 import ast.ReturnStatement
 import ast.StringLiteral
+import `object`.CompiledFunctionObject
 import `object`.IntegerObject
 import `object`.Object
 import `object`.StringObject
@@ -52,7 +53,14 @@ data class Compiler(
             }
 
             is CallExpression -> TODO()
-            is FunctionLiteral -> TODO()
+            is FunctionLiteral -> {
+                enterScope()
+                compile(node.body)
+                val instructions = leaveScope()
+                val compiledFunction = CompiledFunctionObject(instructions)
+                emit(OpConstant, addConstant(compiledFunction))
+            }
+
             is Identifier.Id -> {
                 val symbol = symbolTable.resolve(node.token.literal)
                 if (symbol != null) {
@@ -153,7 +161,11 @@ data class Compiler(
                 emit(OpSetGlobal, symbol.index)
             }
 
-            is ReturnStatement -> TODO()
+            is ReturnStatement -> {
+                compile(node.value)
+                emit(OpReturnValue)
+            }
+
             Nothing -> TODO()
         }
     }
@@ -173,15 +185,11 @@ data class Compiler(
         scopeIndex++
     }
 
-    fun leaveScope() {
+    fun leaveScope(): Instructions {
         val scope = scopes.removeAt(scopeIndex)
         scopeIndex--
 
-        val lastInstruction = scope.lastInstruction
-        if (lastInstruction?.op == OpPop) {
-            removeLastPop()
-            scope.lastInstruction = scope.previousInstruction
-        }
+        return scope.instructions
     }
 
     private fun addConstant(obj: Object): Int {
