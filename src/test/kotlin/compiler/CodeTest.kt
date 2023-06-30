@@ -32,7 +32,12 @@ class CodeTest : ExpectSpec({
                 op = OpAdd,
                 operands = emptyList(),
                 expect = mutableListOf(OpAdd),
-            )
+            ),
+            TestCase(
+                op = OpGetLocal,
+                operands = listOf(255),
+                expect = mutableListOf(OpGetLocal, 0xffu),
+            ),
         )
 
         tests.forEach { (op, operands, expect) ->
@@ -48,10 +53,15 @@ class CodeTest : ExpectSpec({
         val instructions = concatInstructions(
             make(OpAdd),
             make(OpConstant, 2),
+            make(OpGetLocal, 255),
             make(OpConstant, 65535),
         )
 
-        instructions.string() shouldBe "0000 OpAdd\n0001 OpConstant 2\n0004 OpConstant 65535\n"
+        instructions.string() shouldBe """0000 OpAdd
+0001 OpConstant 2
+0004 OpGetLocal 255
+0006 OpConstant 65535
+"""
     }
 
     context("read operands") {
@@ -66,6 +76,11 @@ class CodeTest : ExpectSpec({
                 op = OpConstant,
                 operands = listOf(65535),
                 bytesRead = 2,
+            ),
+            TestCase(
+                op = OpGetLocal,
+                operands = listOf(255),
+                bytesRead = 1,
             ),
         )
 

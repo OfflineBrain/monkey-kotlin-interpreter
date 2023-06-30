@@ -24,6 +24,8 @@ const val OpGetGlobal: Opcode = 0x11u
 const val OpCall: Opcode = 0x12u
 const val OpReturnValue: Opcode = 0x13u
 const val OpReturn: Opcode = 0x14u
+const val OpGetLocal: Opcode = 0x15u
+const val OpSetLocal: Opcode = 0x16u
 
 data class Definition(val name: String, val operandWidths: List<Int>)
 
@@ -49,6 +51,8 @@ val definitions = mapOf(
     OpCall to Definition("OpCall", listOf()),
     OpReturnValue to Definition("OpReturnValue", listOf()),
     OpReturn to Definition("OpReturn", listOf()),
+    OpGetLocal to Definition("OpGetLocal", listOf(1)),
+    OpSetLocal to Definition("OpSetLocal", listOf(1)),
 )
 
 fun lookupDefinition(opcode: Opcode): Definition? {
@@ -84,6 +88,10 @@ fun readOperands(def: Definition, instructions: Instructions): Pair<List<Int>, I
 
     def.operandWidths.forEach { width ->
         when (width) {
+            1 -> {
+                operands.add(instructions[offset].toInt())
+            }
+
             2 -> {
                 operands.add(readUint16(instructions.subList(offset, offset + width)))
             }
@@ -108,6 +116,7 @@ fun make(op: Opcode, vararg operands: Int): Instructions {
     instructions.add(op)
     for ((i, operand) in operands.withIndex()) {
         when (definition.operandWidths[i]) {
+            1 -> instructions.add(operand.toUByte())
             2 -> {
                 instructions.add((operand shr 8).toUByte())
                 instructions.add(operand.toUByte())

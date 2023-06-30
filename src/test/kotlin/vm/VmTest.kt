@@ -262,5 +262,31 @@ class VmTest : ExpectSpec({
                 }
             }
         }
+
+        context("with local bindings") {
+            val data = listOf(
+                """
+                    let globalSeed = 50;
+                    let minusOne = fn() {
+                        let num = 1;
+                        globalSeed - num;
+                    }
+                    let minusTwo = fn() {
+                        let num = 2;
+                        globalSeed - num;
+                    }
+                    globalSeed + minusTwo() + minusOne();
+                """.trimIndent() to 147,
+            )
+
+            data.forEach { (input, expected) ->
+                val stackTop = extracted(input)
+                val result = stackTop as IntegerObject
+
+                expect("should return $expected for \"$input\"") {
+                    result.value shouldBe expected
+                }
+            }
+        }
     }
 })
