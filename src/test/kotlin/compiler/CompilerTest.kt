@@ -68,6 +68,8 @@ class CompilerTest : ExpectSpec({
 
     context("scopes") {
         val compiler = Compiler()
+        val globalSt = compiler.symbolTable
+
         compiler.emit(OpMul)
 
         context("entering a scope") {
@@ -75,6 +77,10 @@ class CompilerTest : ExpectSpec({
 
             expect("index should be incremented") {
                 compiler.scopeIndex shouldBe 1
+            }
+
+            expect("should push a new symbol table") {
+                compiler.symbolTable.outer shouldBe globalSt
             }
         }
 
@@ -89,6 +95,14 @@ class CompilerTest : ExpectSpec({
             compiler.leaveScope()
             expect("index should be decremented") {
                 compiler.scopeIndex shouldBe 0
+            }
+
+            expect("should pop the symbol table") {
+                compiler.symbolTable shouldBe globalSt
+            }
+
+            expect("should not modify the global symbol table incorrectly") {
+                compiler.symbolTable.outer shouldBe null
             }
         }
 
@@ -369,59 +383,168 @@ class CompilerTest : ExpectSpec({
         }
     }
 
-    context("compile global let statements") {
-
-
-        val tests = listOf(
-            TestCase(
-                input = """
+    context("compile let statements") {
+        context("global") {
+            val tests = listOf(
+                TestCase(
+                    input = """
                     let one = 1;
                     let two = 2;
                 """.trimIndent(),
-                expectedConstants = listOf(1, 2).map { IntegerObject(it) },
-                expectedInstructions = listOf(
-                    make(OpConstant, 0x00),
-                    make(OpSetGlobal, 0x00),
-                    make(OpConstant, 0x01),
-                    make(OpSetGlobal, 0x01),
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpSetGlobal, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpSetGlobal, 0x01),
+                    ),
                 ),
-            ),
-            TestCase(
-                input = """
+                TestCase(
+                    input = """
                     let one = 1;
                     one;
                 """.trimIndent(),
-                expectedConstants = listOf(1).map { IntegerObject(it) },
-                expectedInstructions = listOf(
-                    make(OpConstant, 0x00),
-                    make(OpSetGlobal, 0x00),
-                    make(OpGetGlobal, 0x00),
-                    make(OpPop),
+                    expectedConstants = listOf(1).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpSetGlobal, 0x00),
+                        make(OpGetGlobal, 0x00),
+                        make(OpPop),
+                    ),
                 ),
-            ),
-            TestCase(
-                input = """
+                TestCase(
+                    input = """
                     let one = 1;
                     let two = one;
                     two;
                 """.trimIndent(),
-                expectedConstants = listOf(1).map { IntegerObject(it) },
-                expectedInstructions = listOf(
-                    make(OpConstant, 0x00),
-                    make(OpSetGlobal, 0x00),
-                    make(OpGetGlobal, 0x00),
-                    make(OpSetGlobal, 0x01),
-                    make(OpGetGlobal, 0x01),
-                    make(OpPop),
+                    expectedConstants = listOf(1).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpSetGlobal, 0x00),
+                        make(OpGetGlobal, 0x00),
+                        make(OpSetGlobal, 0x01),
+                        make(OpGetGlobal, 0x01),
+                        make(OpPop),
+                    ),
                 ),
-            ),
-        )
+                TestCase(
+                    input = """
+                    let num = 55;
+                    fn() { num }
+                """.trimIndent(),
+                    expectedConstants = listOf(55).map { IntegerObject(it) } + listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpGetGlobal, 0x00),
+                                make(OpReturnValue),
+                            ),
+                        )
+                    ),
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpSetGlobal, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpPop),
+                    ),
+                )
+            )
 
 
-        tests.forEach { (input, expectedConstants, expectedInstructions) ->
-            verifyTestCase(input, expectedConstants, expectedInstructions)
+            tests.forEach { (input, expectedConstants, expectedInstructions) ->
+                verifyTestCase(input, expectedConstants, expectedInstructions)
+            }
+        }
+
+        context("local") {
+            val tests = listOf(
+                TestCase(
+                    input = """
+                    fn() {
+                        let one = 1;
+                        one;
+                    }
+                """.trimIndent(),
+                    expectedConstants = listOf(1).map { IntegerObject(it) } + listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpConstant, 0x00),
+                                make(OpSetLocal, 0x00),
+                                make(OpGetLocal, 0x00),
+                                make(OpReturnValue),
+                            ),
+                            1,
+                        )
+                    ),
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x01),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = """
+                    fn() {
+                        let one = 1;
+                        let two = 2;
+                        one + two;
+                    }
+                """.trimIndent(),
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) } + listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpConstant, 0x00),
+                                make(OpSetLocal, 0x00),
+                                make(OpConstant, 0x01),
+                                make(OpSetLocal, 0x01),
+                                make(OpGetLocal, 0x00),
+                                make(OpGetLocal, 0x01),
+                                make(OpAdd),
+                                make(OpReturnValue),
+                            ),
+                            2,
+                        )
+                    ),
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x02),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = """
+                    fn() {
+                        let one = 1;
+                        let two = one;
+                        one + two;
+                    }
+                """.trimIndent(),
+                    expectedConstants = listOf(1).map { IntegerObject(it) } + listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpConstant, 0x00),
+                                make(OpSetLocal, 0x00),
+                                make(OpGetLocal, 0x00),
+                                make(OpSetLocal, 0x01),
+                                make(OpGetLocal, 0x00),
+                                make(OpGetLocal, 0x01),
+                                make(OpAdd),
+                                make(OpReturnValue),
+                            ),
+                            2,
+                        )
+                    ),
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x01),
+                        make(OpPop),
+                    ),
+                ),
+            )
+
+            tests.forEach { (input, expectedConstants, expectedInstructions) ->
+                verifyTestCase(input, expectedConstants, expectedInstructions)
+            }
         }
     }
+
 
     context("compile functions") {
 

@@ -31,7 +31,7 @@ data class EmittedInstruction(
 
 data class Compiler(
     val constants: MutableList<Object> = mutableListOf(),
-    val symbolTable: SymbolTable = SymbolTable(),
+    var symbolTable: SymbolTable = SymbolTable(),
     val scopes: MutableList<CompilationScope> = mutableListOf(CompilationScope())
 ) {
     var scopeIndex = 0
@@ -68,15 +68,20 @@ data class Compiler(
                     emit(OpReturn)
                 }
 
+                val numLocals = symbolTable.numDefinitions
                 val instructions = leaveScope()
-                val compiledFunction = CompiledFunctionObject(instructions)
+                val compiledFunction = CompiledFunctionObject(instructions, numLocals)
                 emit(OpConstant, addConstant(compiledFunction))
             }
 
             is Identifier.Id -> {
                 val symbol = symbolTable.resolve(node.token.literal)
                 if (symbol != null) {
-                    emit(OpGetGlobal, symbol.index)
+                    if (symbol.scope == GlobalScope) {
+                        emit(OpGetGlobal, symbol.index)
+                    } else {
+                        emit(OpGetLocal, symbol.index)
+                    }
                 }
             }
 
@@ -170,7 +175,11 @@ data class Compiler(
             is LetStatement -> {
                 compile(node.value)
                 val symbol = symbolTable.define(node.name.token.literal)
-                emit(OpSetGlobal, symbol.index)
+                if (symbol.scope == GlobalScope) {
+                    emit(OpSetGlobal, symbol.index)
+                } else {
+                    emit(OpSetLocal, symbol.index)
+                }
             }
 
             is ReturnStatement -> {
@@ -195,11 +204,15 @@ data class Compiler(
         val scope = CompilationScope()
         scopes += scope
         scopeIndex++
+
+        symbolTable = SymbolTable(symbolTable)
     }
 
     fun leaveScope(): Instructions {
         val scope = scopes.removeAt(scopeIndex)
         scopeIndex--
+
+        symbolTable = symbolTable.outer!!
 
         return scope.instructions
     }

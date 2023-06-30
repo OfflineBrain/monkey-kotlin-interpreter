@@ -9,6 +9,7 @@ import compiler.OpDiv
 import compiler.OpEqual
 import compiler.OpFalse
 import compiler.OpGetGlobal
+import compiler.OpGetLocal
 import compiler.OpGreaterThan
 import compiler.OpJump
 import compiler.OpJumpNotTruthy
@@ -21,10 +22,12 @@ import compiler.OpPop
 import compiler.OpReturn
 import compiler.OpReturnValue
 import compiler.OpSetGlobal
+import compiler.OpSetLocal
 import compiler.OpSub
 import compiler.OpTrue
 import compiler.Opcode
 import compiler.readUint16
+import compiler.readUint8
 import `object`.BooleanObject
 import `object`.CompiledFunctionObject
 import `object`.IntegerObject
@@ -45,7 +48,12 @@ data class Vm(
     constructor(bytecode: Bytecode) : this(
         frames = ArrayList<Frame>(MaxFrames)
             .also {
-                it.add(Frame(CompiledFunctionObject(bytecode.instructions), 0))
+                it.add(
+                    Frame(
+                        fn = CompiledFunctionObject(bytecode.instructions, 0),
+                        basePointer = 0
+                    )
+                )
             },
         frameIndex = 1,
         constants = bytecode.constants.toMutableList(),
@@ -59,16 +67,15 @@ data class Vm(
         var op: Opcode
 
         while (currentFrame().ip < currentFrame().instructions.size) {
-            val frame = currentFrame()
 
             ins = currentFrame().instructions
-            op = ins[frame.ip]
+            op = ins[currentFrame().ip]
 
             when (op) {
                 OpConstant -> {
-                    val constIndex = readUint16(ins.subList(frame.ip + 1, ins.size))
+                    val constIndex = readUint16(ins.subList(currentFrame().ip + 1, ins.size))
                     push(constants[constIndex])
-                    frame.ip += 2
+                    currentFrame().ip += 2
                 }
 
                 OpPop -> {
@@ -101,29 +108,41 @@ data class Vm(
                 }
 
                 OpJump -> {
-                    val pos = readUint16(ins.subList(frame.ip + 1, ins.size))
-                    frame.ip = pos - 1
+                    val pos = readUint16(ins.subList(currentFrame().ip + 1, ins.size))
+                    currentFrame().ip = pos - 1
                 }
 
                 OpJumpNotTruthy -> {
-                    val pos = readUint16(ins.subList(frame.ip + 1, ins.size))
-                    frame.ip += 2
+                    val pos = readUint16(ins.subList(currentFrame().ip + 1, ins.size))
+                    currentFrame().ip += 2
                     val condition = pop()
                     if (toInvertedBooleanObject(condition).value) {
-                        frame.ip = pos - 1
+                        currentFrame().ip = pos - 1
                     }
                 }
 
                 OpSetGlobal -> {
-                    val globalIndex = readUint16(ins.subList(frame.ip + 1, ins.size))
-                    frame.ip += 2
+                    val globalIndex = readUint16(ins.subList(currentFrame().ip + 1, ins.size))
+                    currentFrame().ip += 2
                     globals[globalIndex] = pop()
                 }
 
                 OpGetGlobal -> {
-                    val globalIndex = readUint16(ins.subList(frame.ip + 1, ins.size))
-                    frame.ip += 2
+                    val globalIndex = readUint16(ins.subList(currentFrame().ip + 1, ins.size))
+                    currentFrame().ip += 2
                     push(globals[globalIndex])
+                }
+
+                OpSetLocal -> {
+                    val localIndex = readUint8(ins.subList(currentFrame().ip + 1, ins.size))
+                    currentFrame().ip += 1
+                    stack[currentFrame().basePointer + localIndex] = pop()
+                }
+
+                OpGetLocal -> {
+                    val localIndex = readUint8(ins.subList(currentFrame().ip + 1, ins.size))
+                    currentFrame().ip += 1
+                    push(stack[currentFrame().basePointer + localIndex])
                 }
 
                 OpNull -> {
@@ -132,27 +151,31 @@ data class Vm(
 
                 OpCall -> {
                     val fn = stack[sp - 1] as CompiledFunctionObject
-                    val callFrame = Frame(fn)
+                    val callFrame = Frame(
+                        fn = fn,
+                        ip = -1,
+                        basePointer = sp
+                    )
                     pushFrame(callFrame)
+                    sp = callFrame.basePointer + fn.numLocals
                 }
 
                 OpReturnValue -> {
                     val returnValue = pop()
-                    popFrame()
-                    pop()
+                    val popFrame = popFrame()
+                    sp = popFrame.basePointer - 1
 
                     push(returnValue)
                 }
 
                 OpReturn -> {
-                    popFrame()
-                    pop()
+                    val popFrame = popFrame()
+                    sp = popFrame.basePointer - 1
 
                     push(NullObject)
                 }
             }
-
-            frame.ip++
+            currentFrame().ip++
         }
     }
 

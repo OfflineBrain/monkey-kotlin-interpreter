@@ -103,6 +103,11 @@ fun readOperands(def: Definition, instructions: Instructions): Pair<List<Int>, I
     return operands to offset
 }
 
+
+fun readUint8(ins: Instructions): Int {
+    return ins[0].toInt()
+}
+
 fun readUint16(ins: Instructions): Int {
     return ((ins[0] and 0xFFu).toInt() shl 8) xor (ins[1] and 0xFFu).toInt()
 }

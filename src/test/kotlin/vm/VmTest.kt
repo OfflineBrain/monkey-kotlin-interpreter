@@ -265,6 +265,33 @@ class VmTest : ExpectSpec({
 
         context("with local bindings") {
             val data = listOf(
+
+                """let one = fn() { 
+                       let one = 1;
+                       one;
+                   };
+                   one()""" to 1,
+
+                """let oneAndTwo = fn() { 
+                       let one = 1;
+                       let two = 2;
+                       one + two;
+                   };
+                   oneAndTwo();""" to 3,
+
+                """let oneAndTwo = fn() { 
+                       let one = 1;
+                       let two = 2;
+                       one + two;
+                   };
+                   let threeAndFour = fn() {
+                       let three = 3;
+                       let four = 4;
+                       three + four;
+                   };
+                   oneAndTwo() + threeAndFour();""" to 10,
+
+
                 """
                     let globalSeed = 50;
                     let minusOne = fn() {
@@ -276,7 +303,7 @@ class VmTest : ExpectSpec({
                         globalSeed - num;
                     }
                     globalSeed + minusTwo() + minusOne();
-                """.trimIndent() to 147,
+                """ to 147,
             )
 
             data.forEach { (input, expected) ->

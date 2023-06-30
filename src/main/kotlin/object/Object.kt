@@ -143,6 +143,7 @@ data class FunctionObject(
 
 data class CompiledFunctionObject(
     val instructions: Instructions,
+    val numLocals: Int = 0,
 ) : Object {
     override fun type(): ObjectType {
         return COMPILED_FUNCTION
