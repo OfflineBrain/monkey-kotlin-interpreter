@@ -508,10 +508,6 @@ class ParserTest : ExpectSpec({
                     expect("parsed all statements") {
                         assertEquals(data.size, program.statements.size)
                     }
-
-                    println(
-                        program.render()
-                    )
                 }
             }
 
