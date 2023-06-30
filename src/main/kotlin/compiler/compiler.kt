@@ -56,6 +56,11 @@ data class Compiler(
             is FunctionLiteral -> {
                 enterScope()
                 compile(node.body)
+
+                if (isLastInstructionPop()) {
+                    replaceLastPopWithReturn()
+                }
+
                 val instructions = leaveScope()
                 val compiledFunction = CompiledFunctionObject(instructions)
                 emit(OpConstant, addConstant(compiledFunction))
@@ -210,8 +215,15 @@ data class Compiler(
         scope.lastInstruction = EmittedInstruction(op, position)
     }
 
+    private fun lastInstructionIs(op: Opcode): Boolean {
+        if (currentInstructions().isEmpty()) {
+            return false
+        }
+        return currentScope().lastInstruction?.op == op
+    }
+
     private fun isLastInstructionPop(): Boolean {
-        return currentScope().lastInstruction?.op == OpPop
+        return lastInstructionIs(OpPop)
     }
 
     private fun removeLastPop() {
@@ -220,6 +232,13 @@ data class Compiler(
             scope.instructions.removeLast()
         }
         scope.lastInstruction = scope.previousInstruction
+    }
+
+    private fun replaceLastPopWithReturn() {
+        val scope = currentScope()
+        val lastPopPosition = scope.lastInstruction!!.position
+        replaceInstruction(lastPopPosition, make(OpReturnValue))
+        scope.lastInstruction = EmittedInstruction(OpReturnValue, lastPopPosition)
     }
 
     private fun changeOperand(opPosition: Int, operand: Int) {

@@ -486,6 +486,40 @@ class CompilerTest : ExpectSpec({
                         make(OpPop),
                     ),
                 ),
+                TestCase(
+                    input = "fn() { 5 + 10 }",
+                    expectedConstants = listOf(5, 10).map { IntegerObject(it) } + listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpConstant, 0x00),
+                                make(OpConstant, 0x01),
+                                make(OpAdd),
+                                make(OpReturnValue),
+                            ),
+                        )
+                    ),
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x02),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = "fn() { 1; 2 }",
+                    expectedConstants = listOf(1, 2).map { IntegerObject(it) } + listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpConstant, 0x00),
+                                make(OpPop),
+                                make(OpConstant, 0x01),
+                                make(OpReturnValue),
+                            ),
+                        )
+                    ),
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x02),
+                        make(OpPop),
+                    ),
+                ),
             )
 
             tests.forEach { (input, expectedConstants, expectedInstructions) ->
