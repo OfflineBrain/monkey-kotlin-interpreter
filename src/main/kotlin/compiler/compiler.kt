@@ -60,6 +60,9 @@ data class Compiler(
                 if (isLastInstructionPop()) {
                     replaceLastPopWithReturn()
                 }
+                if (!lastInstructionIs(OpReturnValue)) {
+                    emit(OpReturn)
+                }
 
                 val instructions = leaveScope()
                 val compiledFunction = CompiledFunctionObject(instructions)

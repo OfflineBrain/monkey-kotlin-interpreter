@@ -5,6 +5,7 @@ import ast.Program
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
+import io.kotest.core.spec.style.scopes.ExpectSpecContainerScope
 import io.kotest.matchers.shouldBe
 import `object`.CompiledFunctionObject
 import `object`.IntegerObject
@@ -41,6 +42,28 @@ class CompilerTest : ExpectSpec({
             out.addAll(instruction)
         }
         return out
+    }
+
+    suspend fun ExpectSpecContainerScope.verifyTestCase(
+        input: String,
+        expectedConstants: List<Object>,
+        expectedInstructions: List<Instructions>
+    ) {
+        context("input: \"$input\"") {
+            val bytecode = bytecode(input)
+
+            expect("should compile constants") {
+                bytecode.constants shouldBe expectedConstants
+            }
+
+            expect("should compile instructions") {
+                val instructions = concatInstructions(*expectedInstructions.toTypedArray())
+
+                withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
+                    bytecode.instructions shouldBe instructions
+                }
+            }
+        }
     }
 
     context("scopes") {
@@ -142,22 +165,9 @@ class CompilerTest : ExpectSpec({
             ),
         )
 
+
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
-            context("input: \"$input\"") {
-                val bytecode = bytecode(input)
-
-                expect("should compile constants") {
-                    bytecode.constants shouldBe expectedConstants
-                }
-
-                expect("should compile instructions") {
-                    val instructions = concatInstructions(*expectedInstructions.toTypedArray())
-
-                    withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
-                        bytecode.instructions shouldBe instructions
-                    }
-                }
-            }
+            verifyTestCase(input, expectedConstants, expectedInstructions)
         }
 
     }
@@ -284,22 +294,9 @@ class CompilerTest : ExpectSpec({
             ),
         )
 
+
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
-            context("input: \"$input\"") {
-                val bytecode = bytecode(input)
-
-                expect("should compile constants") {
-                    bytecode.constants shouldBe expectedConstants
-                }
-
-                expect("should compile instructions") {
-                    val instructions = concatInstructions(*expectedInstructions.toTypedArray())
-
-                    withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
-                        bytecode.instructions shouldBe instructions
-                    }
-                }
-            }
+            verifyTestCase(input, expectedConstants, expectedInstructions)
         }
     }
 
@@ -338,22 +335,9 @@ class CompilerTest : ExpectSpec({
         )
 
 
+
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
-            context("input: \"$input\"") {
-                val bytecode = bytecode(input)
-
-                expect("should compile constants") {
-                    bytecode.constants shouldBe expectedConstants
-                }
-
-                expect("should compile instructions") {
-                    val instructions = concatInstructions(*expectedInstructions.toTypedArray())
-
-                    withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
-                        bytecode.instructions shouldBe instructions
-                    }
-                }
-            }
+            verifyTestCase(input, expectedConstants, expectedInstructions)
         }
     }
 
@@ -379,22 +363,9 @@ class CompilerTest : ExpectSpec({
             )
         )
 
+
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
-            context("input: \"$input\"") {
-                val bytecode = bytecode(input)
-
-                expect("should compile constants") {
-                    bytecode.constants shouldBe expectedConstants
-                }
-
-                expect("should compile instructions") {
-                    val instructions = concatInstructions(*expectedInstructions.toTypedArray())
-
-                    withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
-                        bytecode.instructions shouldBe instructions
-                    }
-                }
-            }
+            verifyTestCase(input, expectedConstants, expectedInstructions)
         }
     }
 
@@ -446,22 +417,9 @@ class CompilerTest : ExpectSpec({
             ),
         )
 
+
         tests.forEach { (input, expectedConstants, expectedInstructions) ->
-            context("input: \"$input\"") {
-                val bytecode = bytecode(input)
-
-                expect("should compile constants") {
-                    bytecode.constants shouldBe expectedConstants
-                }
-
-                expect("should compile instructions") {
-                    val instructions = concatInstructions(*expectedInstructions.toTypedArray())
-
-                    withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
-                        bytecode.instructions shouldBe instructions
-                    }
-                }
-            }
+            verifyTestCase(input, expectedConstants, expectedInstructions)
         }
     }
 
@@ -486,6 +444,16 @@ class CompilerTest : ExpectSpec({
                         make(OpPop),
                     ),
                 ),
+            )
+
+            tests.forEach { (input, expectedConstants, expectedInstructions) ->
+                verifyTestCase(input, expectedConstants, expectedInstructions)
+            }
+        }
+
+        context("without arguments and return value") {
+            val tests = listOf(
+
                 TestCase(
                     input = "fn() { 5 + 10 }",
                     expectedConstants = listOf(5, 10).map { IntegerObject(it) } + listOf(
@@ -520,24 +488,24 @@ class CompilerTest : ExpectSpec({
                         make(OpPop),
                     ),
                 ),
+                TestCase(
+                    input = "fn() { }",
+                    expectedConstants = listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpReturn),
+                            ),
+                        )
+                    ),
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpPop),
+                    ),
+                ),
             )
 
             tests.forEach { (input, expectedConstants, expectedInstructions) ->
-                context("input: \"$input\"") {
-                    val bytecode = bytecode(input)
-
-                    expect("should compile constants") {
-                        bytecode.constants shouldBe expectedConstants
-                    }
-
-                    expect("should compile instructions") {
-                        val instructions = concatInstructions(*expectedInstructions.toTypedArray())
-
-                        withClue({ " Expected: \n${instructions.string()} \n Actual\n${bytecode.instructions.string()}" }) {
-                            bytecode.instructions shouldBe instructions
-                        }
-                    }
-                }
+                verifyTestCase(input, expectedConstants, expectedInstructions)
             }
         }
     }
