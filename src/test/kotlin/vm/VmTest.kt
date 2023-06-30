@@ -180,6 +180,27 @@ class VmTest : ExpectSpec({
     }
 
     context("a function") {
+        context("call without arguments") {
+            val data = listOf(
+                """let fivePlusTen = fn() { 5 + 10; }; 
+                   fivePlusTen();""" to 15,
+                """let one = fn() { 1; };
+                   let two = fn() { 2; };
+                   one() + two()""" to 3,
+                """let a = fn() { 1 };
+                   let b = fn() { a() + 1 };
+                   let c = fn() { b() + 1 };
+                   c()""" to 3,
+            )
 
+            data.forEach { (input, expected) ->
+                val stackTop = extracted(input)
+                val result = stackTop as IntegerObject
+
+                expect("should return $expected for \"$input\"") {
+                    result.value shouldBe expected
+                }
+            }
+        }
     }
 })

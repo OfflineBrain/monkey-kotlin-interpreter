@@ -3,6 +3,7 @@ package vm
 import compiler.Bytecode
 import compiler.Instructions
 import compiler.OpAdd
+import compiler.OpCall
 import compiler.OpConstant
 import compiler.OpDiv
 import compiler.OpEqual
@@ -17,6 +18,7 @@ import compiler.OpNot
 import compiler.OpNotEqual
 import compiler.OpNull
 import compiler.OpPop
+import compiler.OpReturnValue
 import compiler.OpSetGlobal
 import compiler.OpSub
 import compiler.OpTrue
@@ -125,6 +127,20 @@ data class Vm(
 
                 OpNull -> {
                     push(NullObject)
+                }
+
+                OpCall -> {
+                    val fn = stack[sp - 1] as CompiledFunctionObject
+                    val callFrame = Frame(fn)
+                    pushFrame(callFrame)
+                }
+
+                OpReturnValue -> {
+                    val returnValue = pop()
+                    popFrame()
+                    pop()
+
+                    push(returnValue)
                 }
             }
 
