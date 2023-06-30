@@ -18,6 +18,7 @@ import compiler.OpNot
 import compiler.OpNotEqual
 import compiler.OpNull
 import compiler.OpPop
+import compiler.OpReturn
 import compiler.OpReturnValue
 import compiler.OpSetGlobal
 import compiler.OpSub
@@ -141,6 +142,13 @@ data class Vm(
                     pop()
 
                     push(returnValue)
+                }
+
+                OpReturn -> {
+                    popFrame()
+                    pop()
+
+                    push(NullObject)
                 }
             }
 

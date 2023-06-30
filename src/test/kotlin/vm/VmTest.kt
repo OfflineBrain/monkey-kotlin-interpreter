@@ -202,5 +202,65 @@ class VmTest : ExpectSpec({
                 }
             }
         }
+
+        context("return a function") {
+            val data = listOf(
+                """let returnsOneReturner = fn() { 
+                       let oneReturner = fn() { 1; };
+                       oneReturner;
+                   };
+                   returnsOneReturner()();""" to 1,
+
+                """let oneReturner = fn() { 1; };
+                   let returnsOneReturner = fn() { oneReturner; };
+                   returnsOneReturner()();""" to 1,
+            )
+
+            data.forEach { (input, expected) ->
+                val stackTop = extracted(input)
+                val result = stackTop as IntegerObject
+
+                expect("should return $expected for \"$input\"") {
+                    result.value shouldBe expected
+                }
+            }
+        }
+
+        context("early exit") {
+            val data = listOf(
+                """let earlyExit = fn() { return 99; 100; };
+                   earlyExit();""" to 99,
+                """let earlyExit = fn() { return 99; return 100; };
+                   earlyExit();""" to 99,
+            )
+
+            data.forEach { (input, expected) ->
+                val stackTop = extracted(input)
+                val result = stackTop as IntegerObject
+
+                expect("should return $expected for \"$input\"") {
+                    result.value shouldBe expected
+                }
+            }
+        }
+
+        context("return null") {
+            val data = listOf(
+                """let noReturn = fn() { };
+                   noReturn();""" to NullObject,
+                """let noReturn = fn() { };
+                   let noReturnTwo = fn() { noReturn(); };
+                   noReturn();
+                   noReturnTwo();""" to NullObject,
+            )
+
+            data.forEach { (input, expected) ->
+                val stackTop = extracted(input)
+
+                expect("should return $expected for \"$input\"") {
+                    stackTop shouldBe NullObject
+                }
+            }
+        }
     }
 })
