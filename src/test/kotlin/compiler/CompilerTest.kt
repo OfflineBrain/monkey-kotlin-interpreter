@@ -632,6 +632,7 @@ class CompilerTest : ExpectSpec({
             }
         }
 
+
         context("call") {
             val tests = listOf(
                 TestCase(
@@ -646,7 +647,7 @@ class CompilerTest : ExpectSpec({
                     ),
                     expectedInstructions = listOf(
                         make(OpConstant, 0x01),
-                        make(OpCall),
+                        make(OpCall, 0x00),
                         make(OpPop),
                     ),
                 ),
@@ -667,7 +668,87 @@ class CompilerTest : ExpectSpec({
                         make(OpConstant, 0x01),
                         make(OpSetGlobal, 0x00),
                         make(OpGetGlobal, 0x00),
-                        make(OpCall),
+                        make(OpCall, 0x00),
+                        make(OpPop),
+                    ),
+                ),
+            )
+
+            tests.forEach { (input, expectedConstants, expectedInstructions) ->
+                verifyTestCase(input, expectedConstants, expectedInstructions)
+            }
+        }
+
+        context("call with arguments") {
+            //test cases with fn definition and call
+            val tests = listOf(
+                TestCase(
+                    input = "fn(a) { a } (24);",
+                    expectedConstants = listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpGetLocal, 0x00),
+                                make(OpReturnValue),
+                            ),
+                            1,
+                        )
+                    ) + listOf(24).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpCall, 0x01),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = """
+                        let oneArg = fn(a) { a };
+                        oneArg(24);
+                    """.trimIndent(),
+                    expectedConstants = listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpGetLocal, 0x00),
+                                make(OpReturnValue),
+                            ),
+                            1,
+                        )
+                    ) + listOf(24).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpSetGlobal, 0x00),
+                        make(OpGetGlobal, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpCall, 0x01),
+                        make(OpPop),
+                    ),
+                ),
+                TestCase(
+                    input = """
+                        let manyArg = fn(a, b, c) { a; b; c };
+                        manyArg(24, 25, 26);
+                    """.trimIndent(),
+                    expectedConstants = listOf(
+                        CompiledFunctionObject(
+                            instructions = concatInstructions(
+                                make(OpGetLocal, 0x00),
+                                make(OpPop),
+                                make(OpGetLocal, 0x01),
+                                make(OpPop),
+                                make(OpGetLocal, 0x02),
+                                make(OpReturnValue),
+                            ),
+                            3,
+                        )
+                    ) + listOf(24, 25, 26).map { IntegerObject(it) },
+                    expectedInstructions = listOf(
+                        make(OpConstant, 0x00),
+                        make(OpSetGlobal, 0x00),
+                        make(OpGetGlobal, 0x00),
+                        make(OpConstant, 0x01),
+                        make(OpConstant, 0x02),
+                        make(OpConstant, 0x03),
+                        make(OpCall, 0x03),
                         make(OpPop),
                     ),
                 ),

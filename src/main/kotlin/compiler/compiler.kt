@@ -54,11 +54,17 @@ data class Compiler(
 
             is CallExpression -> {
                 compile(node.function)
-                emit(OpCall)
+
+                node.arguments.forEach { compile(it) }
+
+                emit(OpCall, node.arguments.size)
             }
 
             is FunctionLiteral -> {
                 enterScope()
+
+                node.parameters.forEach { symbolTable.define(it.token.literal) }
+
                 compile(node.body)
 
                 if (isLastInstructionPop()) {

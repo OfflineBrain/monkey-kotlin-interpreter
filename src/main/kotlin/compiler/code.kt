@@ -48,7 +48,7 @@ val definitions = mapOf(
     OpNull to Definition("OpNull", listOf()),
     OpSetGlobal to Definition("OpSetGlobal", listOf(2)),
     OpGetGlobal to Definition("OpGetGlobal", listOf(2)),
-    OpCall to Definition("OpCall", listOf()),
+    OpCall to Definition("OpCall", listOf(1)),
     OpReturnValue to Definition("OpReturnValue", listOf()),
     OpReturn to Definition("OpReturn", listOf()),
     OpGetLocal to Definition("OpGetLocal", listOf(1)),
@@ -116,17 +116,20 @@ fun make(op: Opcode, vararg operands: Int): Instructions {
     val definition = lookupDefinition(op) ?: return mutableListOf()
 
     val instructionLen = 1 + definition.operandWidths.sum()
-    val instructions = ArrayList<UByte>(instructionLen)
+    val instructions = MutableList<UByte>(instructionLen) { 0u }
 
-    instructions.add(op)
+    instructions[0] = op
+    var offset = 1
     for ((i, operand) in operands.withIndex()) {
-        when (definition.operandWidths[i]) {
-            1 -> instructions.add(operand.toUByte())
+        val width = definition.operandWidths[i]
+        when (width) {
+            1 -> instructions[offset] = operand.toUByte()
             2 -> {
-                instructions.add((operand shr 8).toUByte())
-                instructions.add(operand.toUByte())
+                instructions[offset] = (operand shr 8).toUByte()
+                instructions[offset + 1] = operand.toUByte()
             }
         }
+        offset += width
     }
 
     return instructions

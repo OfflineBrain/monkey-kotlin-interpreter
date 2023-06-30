@@ -203,6 +203,61 @@ class VmTest : ExpectSpec({
             }
         }
 
+        context("call with arguments") {
+            val data = listOf(
+                """let identity = fn(a) { a; };
+                   identity(4);""" to 4,
+
+                """let sum = fn(a, b) { a + b; };
+                   sum(1, 2);""" to 3,
+                """let sum = fn(a, b) { 
+                       let c = a + b;
+                       c;
+                   };
+                   sum(1, 2);""" to 3,
+
+                """let sum = fn(a, b) { 
+                       let c = a + b;
+                       c;
+                   };
+                   sum(1, 2) + sum(3, 4);""" to 10,
+
+                """let sum = fn(a, b) { 
+                       let c = a + b;
+                       c;
+                   };
+                   let outer = fn() {
+                       sum(1, 2) + sum(3, 4);
+                   };
+                   outer();""" to 10,
+
+                """let globalNum = 10;
+                   let sum = fn(a, b) { 
+                       let c = a + b;
+                       c + globalNum;
+                   };
+                   let outer = fn() {
+                       sum(1, 2) + sum(3, 4) + globalNum;
+                   };
+                   outer() + globalNum;""" to 50,
+
+                """let manyArg = fn(a, b, c, d, e, f, g) { 
+                       let h = a + b + c + d + e + f + g;
+                       h;
+                   };
+                   manyArg(1, 2, 3, 4, 5, 6, 7);""" to 28,
+            )
+
+            data.forEach { (input, expected) ->
+                val stackTop = extracted(input)
+                val result = stackTop as IntegerObject
+
+                expect("should return $expected for \"$input\"") {
+                    result.value shouldBe expected
+                }
+            }
+        }
+
         context("return a function") {
             val data = listOf(
                 """let returnsOneReturner = fn() { 
@@ -210,10 +265,20 @@ class VmTest : ExpectSpec({
                        oneReturner;
                    };
                    returnsOneReturner()();""" to 1,
-
                 """let oneReturner = fn() { 1; };
                    let returnsOneReturner = fn() { oneReturner; };
                    returnsOneReturner()();""" to 1,
+
+                """let oneReturner = fn() { 1; };
+                   let twoReturner = fn() { 2; };
+                   let returnsOneOrTwoReturner = fn(oneOrTwo) { 
+                       if (oneOrTwo) { 
+                           oneReturner; 
+                       } else { 
+                           twoReturner; 
+                       } 
+                   };
+                   returnsOneOrTwoReturner(true)() + returnsOneOrTwoReturner(false)();""" to 3,
             )
 
             data.forEach { (input, expected) ->

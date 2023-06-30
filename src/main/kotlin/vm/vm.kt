@@ -150,11 +150,13 @@ data class Vm(
                 }
 
                 OpCall -> {
-                    val fn = stack[sp - 1] as CompiledFunctionObject
+                    val numArgs = readUint8(ins.subList(currentFrame().ip + 1, ins.size))
+                    currentFrame().ip++
+                    val fn = stack[sp - 1 - numArgs] as CompiledFunctionObject
                     val callFrame = Frame(
                         fn = fn,
                         ip = -1,
-                        basePointer = sp
+                        basePointer = sp - numArgs
                     )
                     pushFrame(callFrame)
                     sp = callFrame.basePointer + fn.numLocals
@@ -262,7 +264,7 @@ data class Vm(
     }
 
     private fun push(obj: Object) {
-        stack.add(sp, obj)
+        stack[sp] = obj
         sp++
     }
 
