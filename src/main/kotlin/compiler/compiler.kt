@@ -33,8 +33,8 @@ data class Compiler(
     val constants: MutableList<Object> = mutableListOf(),
     val symbolTable: SymbolTable = SymbolTable(),
 ) {
-    var lastInstruction: EmittedInstruction? = null
-    var previousInstruction: EmittedInstruction? = null
+    private var lastInstruction: EmittedInstruction? = null
+    private var previousInstruction: EmittedInstruction? = null
 
     tailrec fun compile(node: Node) {
         when (node) {
@@ -157,12 +157,12 @@ data class Compiler(
         }
     }
 
-    fun addConstant(obj: Object): Int {
+    private fun addConstant(obj: Object): Int {
         constants += obj
         return constants.size - 1
     }
 
-    fun emit(op: Opcode, vararg operands: Int): Int {
+    private fun emit(op: Opcode, vararg operands: Int): Int {
         val instruction = make(op, *operands)
         val position = addInstruction(instruction)
 
@@ -171,36 +171,36 @@ data class Compiler(
         return position
     }
 
-    fun addInstruction(instruction: Instructions): Int {
+    private fun addInstruction(instruction: Instructions): Int {
         val position = instructions.size
         instructions += instruction
         return position
     }
 
-    fun setLastInstruction(op: Opcode, position: Int) {
+    private fun setLastInstruction(op: Opcode, position: Int) {
         previousInstruction = lastInstruction
         lastInstruction = EmittedInstruction(op, position)
     }
 
-    fun isLastInstructionPop(): Boolean {
+    private fun isLastInstructionPop(): Boolean {
         return lastInstruction?.op == OpPop
     }
 
-    fun removeLastPop() {
+    private fun removeLastPop() {
         while (instructions.size > lastInstruction!!.position) {
             instructions.removeLast()
         }
         lastInstruction = previousInstruction
     }
 
-    fun changeOperand(opPosition: Int, operand: Int) {
+    private fun changeOperand(opPosition: Int, operand: Int) {
         val op = instructions[opPosition]
         val newInstruction = make(op, operand)
 
         replaceInstruction(opPosition, newInstruction)
     }
 
-    fun replaceInstruction(position: Int, newInstruction: Instructions) {
+    private fun replaceInstruction(position: Int, newInstruction: Instructions) {
         newInstruction.forEachIndexed { index, instruction ->
             instructions[position + index] = instruction
         }
