@@ -29,19 +29,66 @@ data class EmittedInstruction(
     val position: Int
 )
 
+sealed class CompileError {
+    object None : CompileError()
+    class Union(val errors: MutableList<CompileError> = mutableListOf()) : CompileError()
+    data class InvalidInfixOperator(val operator: String) : CompileError()
+    data class InvalidIdentifier(val literal: String) : CompileError()
+    data class InvalidPrefixOperator(val operator: String) : CompileError()
+    object LeaveGlobalScope : CompileError()
+    object RemoveFromEmptyScope : CompileError()
+    object Nothing : CompileError()
+
+    infix operator fun plus(other: CompileError): CompileError {
+        return when (this) {
+            is None -> other
+            is Union -> {
+                when (other) {
+                    is None -> this
+                    is Union -> {
+                        errors.addAll(other.errors)
+                        this
+                    }
+
+                    else -> {
+                        errors.add(other)
+                        this
+                    }
+                }
+            }
+
+            else -> {
+                when (other) {
+                    is None -> this
+                    is Union -> {
+                        other.errors.add(this)
+                        other
+                    }
+
+                    else -> {
+                        Union(mutableListOf(this, other))
+                    }
+                }
+            }
+        }
+    }
+}
+
 data class Compiler(
     val constants: MutableList<Object> = mutableListOf(),
     var symbolTable: SymbolTable = SymbolTable(),
     val scopes: MutableList<CompilationScope> = mutableListOf(CompilationScope())
 ) {
     var scopeIndex = 0
+    var error: CompileError = CompileError.None
 
     fun bytecode() = Bytecode(currentInstructions(), constants)
 
-    tailrec fun compile(node: Node) {
+    tailrec fun compile(node: Node): CompileError {
+
         when (node) {
             is Program -> {
-                node.statements.forEach { compile(it) }
+                node.statements.forEach { error += compile(it) }
             }
 
             is BooleanLiteral -> {
@@ -53,9 +100,9 @@ data class Compiler(
             }
 
             is CallExpression -> {
-                compile(node.function)
+                error += compile(node.function)
 
-                node.arguments.forEach { compile(it) }
+                node.arguments.forEach { error += compile(it) }
 
                 emit(OpCall, node.arguments.size)
             }
@@ -65,7 +112,7 @@ data class Compiler(
 
                 node.parameters.forEach { symbolTable.define(it.token.literal) }
 
-                compile(node.body)
+                error += compile(node.body)
 
                 if (isLastInstructionPop()) {
                     replaceLastPopWithReturn()
@@ -91,12 +138,12 @@ data class Compiler(
                 }
             }
 
-            is Identifier.Invalid -> TODO()
+            is Identifier.Invalid -> return CompileError.InvalidIdentifier(node.token.literal)
             is IfExpression -> {
-                compile(node.condition)
+                error += compile(node.condition)
                 val jump = emit(OpJumpNotTruthy, 0)
 
-                compile(node.consequence)
+                error += compile(node.consequence)
                 if (isLastInstructionPop()) {
                     removeLastPop()
                 }
@@ -108,7 +155,7 @@ data class Compiler(
                 if (node.alternative == null) {
                     emit(OpNull)
                 } else {
-                    compile(node.alternative)
+                    error += compile(node.alternative)
                     if (isLastInstructionPop()) {
                         removeLastPop()
                     }
@@ -122,13 +169,13 @@ data class Compiler(
 
                 when (node.operator) {
                     Symbols.LT, Symbols.GTE -> {
-                        compile(node.right)
-                        compile(node.left)
+                        error += compile(node.right)
+                        error += compile(node.left)
                     }
 
                     else -> {
-                        compile(node.left)
-                        compile(node.right)
+                        error += compile(node.left)
+                        error += compile(node.right)
                     }
                 }
 
@@ -145,7 +192,7 @@ data class Compiler(
                         emit(OpNot)
                     }
 
-                    else -> TODO()
+                    else -> return CompileError.InvalidInfixOperator(node.operator)
                 }
             }
 
@@ -155,11 +202,11 @@ data class Compiler(
             }
 
             is PrefixExpression -> {
-                compile(node.right)
+                error += compile(node.right)
                 when (node.operator) {
                     Symbols.BANG -> emit(OpNot)
                     Symbols.MINUS -> emit(OpMinus)
-                    else -> TODO()
+                    else -> CompileError.InvalidPrefixOperator(node.operator)
                 }
             }
 
@@ -169,17 +216,17 @@ data class Compiler(
 
             is BlockStatement -> {
                 for (statement in node.statements) {
-                    compile(statement)
+                    error += compile(statement)
                 }
             }
 
             is ExpressionStatement -> {
-                compile(node.expression)
+                error += compile(node.expression)
                 emit(OpPop)
             }
 
             is LetStatement -> {
-                compile(node.value)
+                error += compile(node.value)
                 val symbol = symbolTable.define(node.name.token.literal)
                 if (symbol.scope == GlobalScope) {
                     emit(OpSetGlobal, symbol.index)
@@ -189,12 +236,13 @@ data class Compiler(
             }
 
             is ReturnStatement -> {
-                compile(node.value)
+                error += compile(node.value)
                 emit(OpReturnValue)
             }
 
-            Nothing -> TODO()
+            Nothing -> error += CompileError.Nothing
         }
+        return error
     }
 
     fun emit(op: Opcode, vararg operands: Int): Int {
@@ -216,9 +264,18 @@ data class Compiler(
 
     fun leaveScope(): Instructions {
         val scope = scopes.removeAt(scopeIndex)
+
+        if (scopeIndex == 0) {
+            error += CompileError.LeaveGlobalScope
+            return mutableListOf()
+        }
+
         scopeIndex--
 
-        symbolTable = symbolTable.outer!!
+        symbolTable = symbolTable.outer ?: run {
+            error += CompileError.LeaveGlobalScope
+            return mutableListOf()
+        }
 
         return scope.instructions
     }
@@ -254,7 +311,11 @@ data class Compiler(
 
     private fun removeLastPop() {
         val scope = currentScope()
-        while (scope.instructions.size > scope.lastInstruction!!.position) {
+        val lastInstructionPosition = scope.lastInstruction?.position ?: run {
+            error += CompileError.RemoveFromEmptyScope
+            return
+        }
+        while (scope.instructions.size > lastInstructionPosition) {
             scope.instructions.removeLast()
         }
         scope.lastInstruction = scope.previousInstruction
@@ -262,7 +323,10 @@ data class Compiler(
 
     private fun replaceLastPopWithReturn() {
         val scope = currentScope()
-        val lastPopPosition = scope.lastInstruction!!.position
+        val lastPopPosition = scope.lastInstruction?.position ?: run {
+            error += CompileError.RemoveFromEmptyScope
+            return
+        }
         replaceInstruction(lastPopPosition, make(OpReturnValue))
         scope.lastInstruction = EmittedInstruction(OpReturnValue, lastPopPosition)
     }
@@ -292,5 +356,4 @@ data class CompilationScope(
     val instructions: Instructions = mutableListOf(),
     var lastInstruction: EmittedInstruction? = null,
     var previousInstruction: EmittedInstruction? = null,
-//    val symbolTable: SymbolTable = SymbolTable(),
 )

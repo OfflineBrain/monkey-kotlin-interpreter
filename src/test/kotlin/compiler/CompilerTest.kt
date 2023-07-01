@@ -29,10 +29,15 @@ class CompilerTest : ExpectSpec({
         return parser.parseProgram()
     }
 
-    fun bytecode(input: String): Bytecode {
+    suspend fun ExpectSpecContainerScope.bytecode(input: String): Bytecode {
         val program = parse(input)
         val compiler = Compiler()
         compiler.compile(program)
+
+        expect("should compile \"$input\" without errors") {
+            compiler.error shouldBe CompileError.None
+        }
+
         return compiler.bytecode()
     }
 

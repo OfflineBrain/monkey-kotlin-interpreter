@@ -2,9 +2,11 @@ package vm
 
 import ast.Parser
 import ast.Program
+import compiler.CompileError
 import compiler.Compiler
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.ExpectSpec
+import io.kotest.core.spec.style.scopes.ExpectSpecContainerScope
 import io.kotest.matchers.shouldBe
 import `object`.BooleanObject
 import `object`.IntegerObject
@@ -22,10 +24,15 @@ class VmTest : ExpectSpec({
         return parser.parseProgram()
     }
 
-    fun extracted(input: String): Object {
+    suspend fun ExpectSpecContainerScope.extracted(input: String): Object {
         val program = parse(input)
         val compiler = Compiler()
         compiler.compile(program)
+
+        expect("should compile \"$input\" without errors") {
+            compiler.error shouldBe CompileError.None
+        }
+
         val vm = Vm(compiler.bytecode())
         vm.run()
         return vm.lastPoppedStackElem()
@@ -52,8 +59,8 @@ class VmTest : ExpectSpec({
 
         data.forEach {
             val (input, expected) = it
+            val stackTop = extracted(input)
             expect("should return $expected for \"$input\"") {
-                val stackTop = extracted(input)
                 val result = stackTop as IntegerObject
                 result.value shouldBe expected
             }
@@ -88,8 +95,8 @@ class VmTest : ExpectSpec({
         )
 
         data.forEach { (input, expected) ->
+            val stackTop = extracted(input)
             expect("should return $expected for \"$input\"") {
-                val stackTop = extracted(input)
                 val result = stackTop as BooleanObject
                 result.value shouldBe expected
             }
@@ -154,8 +161,8 @@ class VmTest : ExpectSpec({
         )
 
         data.forEach { (input, expected) ->
+            val stackTop = extracted(input)
             expect("should return $expected for \"$input\"") {
-                val stackTop = extracted(input)
                 val result = stackTop as StringObject
                 result.value shouldBe expected
             }
