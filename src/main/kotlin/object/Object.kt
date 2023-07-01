@@ -125,6 +125,12 @@ sealed class ErrorObject(val message: String) : Object {
     class UnknownIdentifier(identifier: String) : ErrorObject("unknown identifier: $identifier")
 
     class NotAFunction(type: String) : ErrorObject("not a function: $type")
+
+    class ArgumentMismatch(expected: String, actual: String) :
+        ErrorObject("argument mismatch: expected=$expected, actual=$actual")
+
+    class ArgumentNumberMismatch(expected: Int, actual: Int) :
+        ErrorObject("argument number mismatch: expected=$expected, actual=$actual")
 }
 
 data class FunctionObject(
@@ -138,6 +144,16 @@ data class FunctionObject(
 
     override fun render(): String {
         return "fn(${parameters.joinToString(", ")}) ${body.render()}"
+    }
+}
+
+data class BuiltInFunctionObject(val fn: (Array<Object>) -> Object) : Object {
+    override fun type(): ObjectType {
+        return FUNCTION
+    }
+
+    override fun render(): String {
+        return "built-in function"
     }
 }
 

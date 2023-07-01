@@ -1,7 +1,5 @@
 package eval
 
-import token.Lexer
-import token.Token
 import ast.BooleanLiteral
 import ast.Parser
 import io.kotest.core.annotation.DisplayName
@@ -14,6 +12,8 @@ import `object`.INTEGER
 import `object`.IntegerObject
 import `object`.NullObject
 import `object`.StringObject
+import token.Lexer
+import token.Token
 import kotlin.test.assertEquals
 
 @DisplayName("Evaluation")
@@ -417,6 +417,34 @@ class EvaluationTest : ExpectSpec({
                         val evaluated = eval(program, env)
                         assert(evaluated is BooleanObject)
                         assertEquals(expected, (evaluated as BooleanObject).value, program.render())
+                    }
+                }
+            }
+        }
+
+        context("of built-in functions") {
+            context("len") {
+                val data = listOf(
+                    """len("")""" to 0,
+                    """len("four")""" to 4,
+                    """len("hello world")""" to 11,
+                    """len(1)""" to "",
+                    """len("one", "two")""" to "",
+                )
+
+                data.forEach { (input, expected) ->
+                    val lexer = Lexer(input)
+                    val parser = Parser(lexer)
+                    val program = parser.parseProgram()
+
+                    expect("[$input] to return an integer [$expected] object") {
+                        val evaluated = eval(program, env)
+                        if (expected is Int) {
+                            assert(evaluated is IntegerObject)
+                            assertEquals(expected, (evaluated as IntegerObject).value, program.render())
+                        } else {
+                            assert(evaluated is ErrorObject)
+                        }
                     }
                 }
             }

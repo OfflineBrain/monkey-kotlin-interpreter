@@ -20,6 +20,7 @@ import ast.ReturnStatement
 import ast.Statement
 import ast.StringLiteral
 import `object`.BooleanObject
+import `object`.BuiltInFunctionObject
 import `object`.ErrorObject
 import `object`.FunctionObject
 import `object`.IntegerObject
@@ -27,6 +28,7 @@ import `object`.NullObject
 import `object`.Object
 import `object`.ReturnValueObject
 import `object`.StringObject
+import `object`.builtins
 import token.Symbols
 
 tailrec fun eval(node: ast.Node, env: Environment): Object {
@@ -134,7 +136,9 @@ private fun evalBlockStatement(statements: List<Statement>, env: Environment): O
 }
 
 private fun evalIdentifier(node: Identifier.Id, env: Environment): Object {
-    return env[node.tokenLiteral()] ?: ErrorObject.UnknownIdentifier(node.tokenLiteral())
+    return env[node.tokenLiteral()]
+        ?: builtins[node.tokenLiteral()]
+        ?: ErrorObject.UnknownIdentifier(node.tokenLiteral())
 }
 
 private fun evalExpressions(expressions: List<Expression>, env: Environment): List<Object> {
@@ -257,6 +261,8 @@ private fun applyFunction(fn: Object, args: List<Object>): Object {
             val evaluated = eval(fn.body, extendedEnv)
             unwrapReturnValue(evaluated)
         }
+
+        is BuiltInFunctionObject -> fn.fn(args.toTypedArray())
 
         else -> ErrorObject.NotAFunction(fn.type())
     }
