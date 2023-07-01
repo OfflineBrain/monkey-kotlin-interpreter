@@ -448,6 +448,44 @@ class EvaluationTest : ExpectSpec({
                     }
                 }
             }
+
+            context("read_line") {
+                val data = listOf(
+                    """read_line("src/test/resources/eval_builtin_read_line.txt")""" to "First line of defense against infection",
+                )
+
+                data.forEach { (input, expected) ->
+                    val lexer = Lexer(input)
+                    val parser = Parser(lexer)
+                    val program = parser.parseProgram()
+
+                    expect("[$input] to return a string [$expected] object") {
+                        val evaluated = eval(program, env)
+                        assert(evaluated is StringObject)
+                        assertEquals(expected, (evaluated as StringObject).value, program.render())
+                    }
+                }
+            }
+
+            context("read_line") {
+                val data = listOf(
+                    """read_file("src/test/resources/eval_builtin_read_file.txt")""" to """First line of defense against infection
+And a second line is here
+Even third""",
+                )
+
+                data.forEach { (input, expected) ->
+                    val lexer = Lexer(input)
+                    val parser = Parser(lexer)
+                    val program = parser.parseProgram()
+
+                    expect("[$input] to return a string [$expected] object") {
+                        val evaluated = eval(program, env)
+                        assert(evaluated is StringObject)
+                        assertEquals(expected, (evaluated as StringObject).value, program.render())
+                    }
+                }
+            }
         }
     }
 })
